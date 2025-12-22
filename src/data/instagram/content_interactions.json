@@ -1,0 +1,122 @@
+{
+  "organic_insights_interactions": [
+    {
+      "title": "",
+      "media_map_data": {
+        
+      },
+      "string_map_data": {
+        "Date range": {
+          "href": "",
+          "value": "Sep 22 - Dec 20",
+          "timestamp": 0
+        },
+        "Content interactions": {
+          "href": "",
+          "value": "396",
+          "timestamp": 0
+        },
+        "Content interactions delta": {
+          "href": "",
+          "value": "+800% vs Jun 24 - Sep 21",
+          "timestamp": 0
+        },
+        "Post interactions": {
+          "href": "",
+          "value": "371",
+          "timestamp": 0
+        },
+        "Post interactions delta": {
+          "href": "",
+          "value": "+1,274% vs Jun 24 - Sep 21",
+          "timestamp": 0
+        },
+        "Post likes": {
+          "href": "",
+          "value": "322",
+          "timestamp": 0
+        },
+        "Post shares": {
+          "href": "",
+          "value": "23",
+          "timestamp": 0
+        },
+        "Post saves": {
+          "href": "",
+          "value": "3",
+          "timestamp": 0
+        },
+        "Story interactions": {
+          "href": "",
+          "value": "13",
+          "timestamp": 0
+        },
+        "Story interactions delta": {
+          "href": "",
+          "value": "-- vs Jun 24 - Sep 21",
+          "timestamp": 0
+        },
+        "Video interactions": {
+          "href": "",
+          "value": "0",
+          "timestamp": 0
+        },
+        "Video interactions delta": {
+          "href": "",
+          "value": "0% vs Jun 24 - Sep 21",
+          "timestamp": 0
+        },
+        "Reels interactions": {
+          "href": "",
+          "value": "12",
+          "timestamp": 0
+        },
+        "Reels interactions delta": {
+          "href": "",
+          "value": "-29.5% vs Jun 24 - Sep 21",
+          "timestamp": 0
+        },
+        "Reels likes": {
+          "href": "",
+          "value": "8",
+          "timestamp": 0
+        },
+        "Reels shares": {
+          "href": "",
+          "value": "2",
+          "timestamp": 0
+        },
+        "Live video interactions": {
+          "href": "",
+          "value": "0",
+          "timestamp": 0
+        },
+        "Live video interactions delta": {
+          "href": "",
+          "value": "0% vs Jun 24 - Sep 21",
+          "timestamp": 0
+        },
+        "Accounts engaged": {
+          "href": "",
+          "value": "72",
+          "timestamp": 0
+        },
+        "Accounts engaged delta": {
+          "href": "",
+          "value": "+242% vs Jun 24 - Sep 21",
+          "timestamp": 0
+        },
+        "Engaged account by follow type": {
+          "href": "",
+          "value": "Followers: 81.1%, Non-followers: 18.9%",
+          "timestamp": 0
+        },
+        "You engaged delta% more accounts that weren't following you compared to previous period": {
+          "href": "",
+          "value": "+600% vs Jun 24 - Sep 21",
+          "timestamp": 0
+        }
+      }
+    }
+  ]
+}

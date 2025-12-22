@@ -1,0 +1,125 @@
+╔════════════════════════════════════════════════════════════════════╗
+║    PERFORMANCE & STRATEGY INTELLIGENCE AGENT                       ║
+║    Multi-Platform Analytics for C-Suite Decision Making            ║
+╚════════════════════════════════════════════════════════════════════╝
+
+Ingesting data from all sources...
+Loading LinkedIn data...
+✓ Loaded 0 LinkedIn records
+Loading Website data...
+✓ Loaded 40 Website records
+Generating Instagram synthetic data...
+Loading competitors...
+✓ Loaded 4 competitors
+Running platform-specific agents...
+  ✓ LinkedIn Analysis: 0 insights
+  ✓ Instagram Analysis: 0 insights
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+  ✓ Website Analysis: 2 insights
+
+🧠 Synthesizing executive insights...
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+  ✓ Executive Summary: 4 strategic insights
+
+
+======================================================================
+  PERFORMANCE & STRATEGY INTELLIGENCE
+======================================================================
+Generated: 2025-12-22 14:06
+
+======================================================================
+  🎯 EXECUTIVE SUMMARY - C-SUITE INSIGHTS
+======================================================================
+
+1. 📈 Growth Trend Analysis
+   📊 Analysis unavailable: litellm.BadGatewayError: BadGatewayError: Litellm_
+   ├─ Metric: 30-day growth rates across platforms
+   ├─ Period: Last 30 days
+   ├─ Confidence: High
+   └─ 💡 Focus resources on highest-growth channel.
+
+2. ⚠️ Leakage Analysis
+   📊 Analysis unavailable: litellm.BadGatewayError: BadGatewayError: Litellm_
+   ├─ Metric: Engagement & bounce metrics
+   ├─ Period: Last 30 days
+   ├─ Confidence: High
+   └─ 💡 Address highest-leakage channel first.
+
+3. 🎯 Platform Prioritization
+   📊 Analysis unavailable: litellm.BadGatewayError: BadGatewayError: Litellm_
+   ├─ Metric: Top: Website
+   ├─ Period: Based on recent performance
+   ├─ Confidence: Medium
+   └─ 💡 Allocate 50% resources to Website.
+
+4. 🚀 Strategic Recommendations
+   📊 Analysis unavailable: litellm.BadGatewayError: BadGatewayError: Litellm_
+   ├─ Metric: Multi-platform analysis
+   ├─ Period: Next Quarter
+   ├─ Confidence: Medium
+   └─ 💡 Execute top 3 priority actions from platform insights.
+
+======================================================================
+  📱 PLATFORM DEEP DIVES
+======================================================================
+
+──────────────────────────────────────────────────────────────────────
+  LINKEDIN ANALYTICS
+──────────────────────────────────────────────────────────────────────
+
+──────────────────────────────────────────────────────────────────────
+  INSTAGRAM ANALYTICS
+──────────────────────────────────────────────────────────────────────
+
+──────────────────────────────────────────────────────────────────────
+  WEBSITE ANALYTICS
+──────────────────────────────────────────────────────────────────────
+
+1. Website: Traffic Quality
+   📊 Analysis error: litellm.Timeout: Timeout Error: Litellm_proxyExcep
+   ├─ Metric: Bounce rate: 76.2%
+   ├─ Period: 2025-11-18 to 2025-12-21
+   ├─ Confidence: High
+   └─ 💡 Improve landing page relevance and load time.
+
+2. Website: Visitor Engagement
+   📊 Analysis error: litellm.BadGatewayError: BadGatewayError: Litellm_
+   ├─ Metric: 1.33 pages/visitor
+   ├─ Period: Last 2 weeks
+   ├─ Confidence: Medium
+   └─ 💡 Add internal linking and CTAs to boost depth.
+
+======================================================================
+  💬 INTERACTIVE ANALYST - Ask Me Anything
+======================================================================
+Questions you can ask:
+  • Are we growing or declining?
+  • Where is the leakage?
+  • Which platform deserves attention?
+  • What should we do next?
+Type 'exit' to quit
+
+
+You: 
