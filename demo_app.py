@@ -168,21 +168,18 @@ inject_custom_css()
 
 # --- Sidebar Navigation ---
 with st.sidebar:
+    st.image("logo.png", use_container_width=True)
     st.markdown("### 🐺 The Insight Room")
     st.markdown("---")
     
-    # Navigation Menu (Mock functionality)
+    # Navigation Menu
     menu_options = [
         "📊 Dashboard", 
         "📢 Marketing", 
-        "⚔️ Competitor Analysis", 
-        "🌍 Events Intelligence", 
-        "📑 Reports", 
-        "🔗 Evidence & Citations", 
-        "⚙️ Settings"
+        "📑 Reports"
     ]
     
-    selected_menu = st.radio("Navigation", menu_options, index=1, label_visibility="collapsed")
+    selected_menu = st.radio("Navigation", menu_options, index=0, label_visibility="collapsed")
     
     st.markdown("---")
     st.caption("Active Agents")
@@ -192,11 +189,12 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("**Version 1.2.0 (Enterprise)**")
 
+
 # --- Main Header ---
 col_head_main, col_head_user = st.columns([3, 1])
 
 with col_head_main:
-    st.markdown('<div class="page-title">Marketing Overview – LinkedIn</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-title">Marketing Overview</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-subtext">Insights generated from approved public sources and analytics data.</div>', unsafe_allow_html=True)
 
 with col_head_user:
@@ -214,144 +212,170 @@ with col_head_user:
 
 st.markdown("---")
 
-# --- Section 1: KPI Cards ---
-kpis = utils.get_kpi_metrics()
-cols = st.columns(len(kpis))
+def render_dashboard_tab(platform_name):
+    # --- Section 1: KPI Cards ---
+    kpis = utils.get_kpi_metrics(platform=platform_name)
+    cols = st.columns(len(kpis))
 
-for idx, col in enumerate(cols):
-    item = kpis[idx]
-    trend_color = "trend-up" if item['trend_direction'] == 'up' else ("trend-down" if item['trend_direction'] == 'down' else "trend-neutral")
-    trend_icon = "↑" if item['trend_direction'] == 'up' else ("↓" if item['trend_direction'] == 'down' else "→")
-    
-    with col:
-        st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">{item['label']}</div>
-            <div class="kpi-value">{item['value']}</div>
-            <div class="kpi-trend {trend_color}">
-                {trend_icon} {item['trend']} <span style="font-weight:400; color:#94A3B8; margin-left:4px;">{item['helper']}</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# --- Section 2: Charts Area ---
-col_chart_main, col_chart_side = st.columns([2, 1])
-
-with col_chart_main:
-    st.markdown("### 📈 LinkedIn Engagement Trend")
-    df_trend = utils.get_engagement_trend_data()
-    
-    fig = px.line(df_trend, x="Month", y="Engagement Index", 
-                  template="plotly_white", markers=True, line_shape="spline")
-    fig.update_traces(line_color="#2563EB", line_width=4, marker_size=8)
-    fig.update_layout(
-        height=350,
-        margin=dict(l=20, r=20, t=10, b=20),
-        yaxis=dict(showgrid=True, gridcolor='rgba(226, 232, 240, 0.5)'),
-        xaxis=dict(showgrid=False)
-    )
-    st.plotly_chart(fig, use_container_width=True)
-    st.caption("Index calculated based on weighted average of Likes (1x), Comments (2x), and Shares (3x).")
-
-with col_chart_side:
-    st.markdown("### Growth & Activity")
-    df_follow, df_visit = utils.get_supporting_charts_data()
-    
-    # Sparkline-ish Follower Growth
-    st.markdown("**Follower Growth (6 Mo)**")
-    fig_spark = px.bar(df_follow, x="Month", y="Growth", template="plotly_white")
-    fig_spark.update_traces(marker_color="#CBD5E1") # Subtle grey bars
-    fig_spark.update_layout(height=120, margin=dict(l=0,r=0,t=0,b=0), xaxis_title=None, yaxis_title=None)
-    fig_spark.update_yaxes(showgrid=False, showticklabels=False)
-    st.plotly_chart(fig_spark, use_container_width=True, config={'displayModeBar': False})
-    
-    # Visitor Activity
-    st.markdown("**Weekly Visitor Pattern**")
-    fig_visit = px.bar(df_visit, x="Day", y="Visits", template="plotly_white")
-    fig_visit.update_traces(marker_color="#3B82F6")
-    fig_visit.update_layout(height=120, margin=dict(l=0,r=0,t=0,b=0), xaxis_title=None, yaxis_title=None)
-    fig_visit.update_yaxes(showgrid=False, showticklabels=False)
-    st.plotly_chart(fig_visit, use_container_width=True, config={'displayModeBar': False})
-
-st.markdown("---")
-
-# --- Section 3: Top Insights ---
-st.markdown("### 💡 Top Strategic Insights")
-insights = utils.get_insights()
-cols_ins = st.columns(3)
-
-for idx, col in enumerate(cols_ins):
-    item = insights[idx]
-    badge_cls = "badge-high" if item['confidence'] == 'High' else "badge-medium"
-    
-    with col:
-        st.markdown(f"""
-        <div class="content-card">
-            <div>
-                <div class="card-header-row">
-                    <span class="badge {badge_cls}">Confidence: {item['confidence']}</span>
+    for idx, col in enumerate(cols):
+        item = kpis[idx]
+        trend_color = "trend-up" if item['trend_direction'] == 'up' else ("trend-down" if item['trend_direction'] == 'down' else "trend-neutral")
+        trend_icon = "↑" if item['trend_direction'] == 'up' else ("↓" if item['trend_direction'] == 'down' else "→")
+        
+        with col:
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-label">{item['label']}</div>
+                <div class="kpi-value">{item['value']}</div>
+                <div class="kpi-trend {trend_color}">
+                    {trend_icon} {item['trend']} <span style="font-weight:400; color:#94A3B8; margin-left:4px;">{item['helper']}</span>
                 </div>
-                <div class="card-main-title">{item['title']}</div>
-                <div class="card-body-text">{item['description']}</div>
             </div>
-            <div style="font-size:0.85rem; color:#2563EB; font-weight:500; cursor:pointer;">
-                View Evidence &rarr;
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
-# --- Section 4: Recommendations ---
-st.markdown("### 🚀 Recommended Actions")
-recs = utils.get_recommendations()
-cols_rec = st.columns(3)
+    # --- Section 2: Charts Area ---
+    col_chart_main, col_chart_side = st.columns([2, 1])
 
-for idx, col in enumerate(cols_rec):
-    item = recs[idx]
-    badge_cls = "badge-high" if item['confidence'] == 'High' else "badge-medium"
-    
-    with col:
-        st.markdown(f"""
-        <div class="content-card" style="border-left: 4px solid #2563EB;">
-            <div>
-                 <div class="card-header-row">
-                    <span class="badge {badge_cls}">{item['confidence']} Confidence</span>
+    with col_chart_main:
+        st.markdown(f"### 📈 {platform_name} Engagement Trend")
+        df_trend = utils.get_engagement_trend_data(platform=platform_name)
+        
+        fig = px.line(df_trend, x="Month", y="Engagement Index", 
+                      template="plotly_white", markers=True, line_shape="spline")
+        fig.update_traces(line_color="#2563EB", line_width=4, marker_size=8)
+        fig.update_layout(
+            height=350,
+            margin=dict(l=20, r=20, t=10, b=20),
+            yaxis=dict(showgrid=True, gridcolor='rgba(226, 232, 240, 0.5)'),
+            xaxis=dict(showgrid=False)
+        )
+        st.plotly_chart(fig, use_container_width=True, key=f"{platform_name}_main_trend")
+        st.caption("Index calculated based on weighted average of various engagement metrics.")
+
+    with col_chart_side:
+        st.markdown("### Growth & Activity")
+        df_follow, df_visit = utils.get_supporting_charts_data()
+        
+        # Sparkline-ish Follower Growth
+        st.markdown("**Follower Growth (6 Mo)**")
+        fig_spark = px.bar(df_follow, x="Month", y="Growth", template="plotly_white")
+        fig_spark.update_traces(marker_color="#CBD5E1") # Subtle grey bars
+        fig_spark.update_layout(height=120, margin=dict(l=0,r=0,t=0,b=0), xaxis_title=None, yaxis_title=None)
+        fig_spark.update_yaxes(showgrid=False, showticklabels=False)
+        st.plotly_chart(fig_spark, use_container_width=True, config={'displayModeBar': False}, key=f"{platform_name}_spark")
+        
+        # Visitor Activity
+        st.markdown("**Weekly Visitor Pattern**")
+        fig_visit = px.bar(df_visit, x="Day", y="Visits", template="plotly_white")
+        fig_visit.update_traces(marker_color="#3B82F6")
+        fig_visit.update_layout(height=120, margin=dict(l=0,r=0,t=0,b=0), xaxis_title=None, yaxis_title=None)
+        fig_visit.update_yaxes(showgrid=False, showticklabels=False)
+        st.plotly_chart(fig_visit, use_container_width=True, config={'displayModeBar': False}, key=f"{platform_name}_visit")
+
+    st.markdown("---")
+
+    # --- Section 3: Top Insights ---
+    st.markdown("### 💡 Top Strategic Insights")
+    insights = utils.get_insights(platform=platform_name)
+    cols_ins = st.columns(3)
+
+    for idx, col in enumerate(cols_ins):
+        item = insights[idx]
+        badge_cls = "badge-high" if item['confidence'] == 'High' else "badge-medium"
+        
+        with col:
+            st.markdown(f"""
+            <div class="content-card">
+                <div>
+                    <div class="card-header-row">
+                        <span class="badge {badge_cls}">Confidence: {item['confidence']}</span>
+                    </div>
+                    <div class="card-main-title">{item['title']}</div>
+                    <div class="card-body-text">{item['description']}</div>
                 </div>
-                <div class="card-main-title">{item['action']}</div>
-                <div class="card-body-text">{item['description']}</div>
+                <div style="font-size:0.85rem; color:#2563EB; font-weight:500; cursor:pointer;">
+                    View Evidence &rarr;
+                </div>
             </div>
-            <button style="
-                background-color:#F1F5F9; 
-                border:none; 
-                padding:8px 16px; 
-                border-radius:6px; 
-                color:#0F172A; 
-                font-size:0.85rem; 
-                font-weight:600; 
-                cursor:pointer;
-                margin-top:10px;">
-                Add to Roadmap
-            </button>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-# --- Data Input Panel ---
-st.markdown("### 🔌 Data & Competitor Sources")
-with st.container():
-    c1, c2 = st.columns(2)
-    with c1:
-        st.markdown("**Approved Public Sources**")
-        st.text_input("Website URL", placeholder="https://shorthills.ai")
-        st.text_input("LinkedIn Page URL", placeholder="https://linkedin.com/company/shorthills-ai")
-    with c2:
-        st.markdown("**Competitor Benchmarking**")
-        st.text_area("Competitor URLs (one per line)", placeholder="https://competitor.com\nhttps://rival.com")
-        st.button("Run Analysis", type="primary")
+    # --- Section 4: Recommendations ---
+    st.markdown("### 🚀 Recommended Actions")
+    recs = utils.get_recommendations(platform=platform_name)
+    cols_rec = st.columns(3)
+
+    for idx, col in enumerate(cols_rec):
+        item = recs[idx]
+        badge_cls = "badge-high" if item['confidence'] == 'High' else "badge-medium"
+        
+        with col:
+            st.markdown(f"""
+            <div class="content-card" style="border-left: 4px solid #2563EB;">
+                <div>
+                     <div class="card-header-row">
+                        <span class="badge {badge_cls}">{item['confidence']} Confidence</span>
+                    </div>
+                    <div class="card-main-title">{item['action']}</div>
+                    <div class="card-body-text">{item['description']}</div>
+                </div>
+                <button style="
+                    background-color:#F1F5F9; 
+                    border:none; 
+                    padding:8px 16px; 
+                    border-radius:6px; 
+                    color:#0F172A; 
+                    font-size:0.85rem; 
+                    font-weight:600; 
+                    cursor:pointer;
+                    margin-top:10px;">
+                    Add to Roadmap
+                </button>
+            </div>
+            """, unsafe_allow_html=True)
+
+if "Reports" in selected_menu:
+    # --- Executive Report View ---
+    st.markdown("### 📄 Generated Executive Report")
+    
+    report_content = utils.get_report_summary()
+    st.markdown(report_content)
+    
+    st.markdown("---")
+    st.download_button("Download PDF Report", report_content, file_name="executive_report.txt")
+
+else:
+    # --- Main Dashboard View (Dashboard & Marketing) ---
+    
+    # --- Tabs Implementation ---
+    tab1, tab2, tab3 = st.tabs(["LinkedIn", "Instagram", "Website"])
+
+    with tab1:
+        render_dashboard_tab("LinkedIn")
+
+    with tab2:
+        render_dashboard_tab("Instagram")
+
+    with tab3:
+        render_dashboard_tab("Website")
+
+    st.markdown("---")
+
+    # --- Data Input Panel ---
+    st.markdown("### 🔌 Data & Competitor Sources")
+    with st.container():
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("**Approved Public Sources**")
+            st.text_input("Website URL", placeholder="https://shorthills.ai")
+            st.text_input("LinkedIn Page URL", placeholder="https://linkedin.com/company/shorthills-ai")
+        with c2:
+            st.markdown("**Competitor Benchmarking**")
+            st.text_area("Competitor URLs (one per line)", placeholder="https://competitor.com\nhttps://rival.com")
+            st.button("Run Analysis", type="primary")
 
 # --- Chatbot Overlay (Floating) ---
 # To simulate the floating chat, we use a fixed position button in CSS
@@ -360,4 +384,5 @@ with st.expander("💬 Ask The Insight Room", expanded=False):
     st.markdown("**AI Analyst**")
     st.chat_message("assistant").write("I've analyzed the latest engagement data. The drop in posting consistency seems to be correlating with the dip in weekend engagement. Shall I draft a schedule?")
     st.text_input("Ask a question...", placeholder="Why is engagement down?")
+
 # Force Reload

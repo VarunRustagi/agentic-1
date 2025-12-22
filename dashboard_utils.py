@@ -14,14 +14,21 @@ COLORS = {
 
 # --- Data Generation Functions ---
 
-def get_kpi_metrics():
+def get_kpi_metrics(platform="LinkedIn"):
     """Generates the top-row KPI cards data."""
+    if platform == "Instagram":
+        val_eng, val_trend, val_grow, val_visit = "5.2%", "+1.1%", "+3,400", "12.1k"
+    elif platform == "Website":
+        val_eng, val_trend, val_grow, val_visit = "2.1%", "-0.4%", "+500", "45.2k"
+    else: # LinkedIn
+        val_eng, val_trend, val_grow, val_visit = "4.8%", "+0.6%", "+1,250", "8.5k"
+
     return [
         {
             "label": "Avg Engagement Rate",
-            "value": "4.8%",
-            "trend": "+0.6%",
-            "trend_direction": "up",
+            "value": val_eng,
+            "trend": val_trend,
+            "trend_direction": "up" if "+" in val_trend else "down",
             "helper": "vs last 30 days"
         },
         {
@@ -33,14 +40,14 @@ def get_kpi_metrics():
         },
         {
             "label": "Follower Growth",
-            "value": "+1,250",
+            "value": val_grow,
             "trend": "+12%",
             "trend_direction": "up",
             "helper": "new followers"
         },
         {
             "label": "Profile Visitors",
-            "value": "8.5k",
+            "value": val_visit,
             "trend": "+5%",
             "trend_direction": "up",
             "helper": "unique visits"
@@ -54,13 +61,17 @@ def get_kpi_metrics():
         }
     ]
 
-def get_engagement_trend_data(months=6):
+def get_engagement_trend_data(months=6, platform="LinkedIn"):
     """Generates monthly engagement trend data for the main chart."""
     dates = pd.date_range(end=datetime.today(), periods=months, freq='ME')
     
+    base = 3000
+    if platform == "Instagram": base = 5000
+    if platform == "Website": base = 10000
+
     data = {
         "Month": [d.strftime("%b") for d in dates],
-        "Engagement Index": [int(3000 + x*400 + random.randrange(-500, 500)) for x in range(months)]
+        "Engagement Index": [int(base + x*400 + random.randrange(-500, 500)) for x in range(months)]
     }
     return pd.DataFrame(data)
 
@@ -81,34 +92,37 @@ def get_supporting_charts_data():
     
     return df_followers, df_visitors
 
-def get_insights():
+def get_insights(platform="LinkedIn"):
     """Returns top 3 insights with 'Senior Data Product' quality."""
+    
+    prefix = f"[{platform}] "
+    
     return [
         {
-            "title": "Video content drives 2.5x more engagement",
+            "title": prefix + "Video content drives 2.5x more engagement",
             "description": "Short-form video posts (<60s) are significantly outperforming static images and text-only posts across all demographics.",
             "confidence": "High",
             "type": "opportunity" 
         },
         {
-            "title": "Competitor 'TechFlow' gaining traction",
+            "title": prefix + "Competitor 'TechFlow' gaining traction",
             "description": "TechFlow's recent 'AI Ethics' campaign has overlapped with a 15% dip in your share of voice for similar keywords.",
             "confidence": "Medium",
             "type": "warning"
         },
         {
-            "title": "CTO personas engagement is peaking",
+            "title": prefix + "CTO personas engagement is peaking",
             "description": "Interaction from users with 'CTO' or 'VP Engineering' titles has increased by 40% in the last quarter.",
             "confidence": "High",
             "type": "trend"
         }
     ]
 
-def get_recommendations():
+def get_recommendations(platform="LinkedIn"):
     """Returns 3 actionable recommendations."""
     return [
         {
-            "action": "Pivot to Video-First Strategy",
+            "action": f"Pivot to {platform} Video-First Strategy",
             "description": "Allocate 40% of the content budget to short-form video production for next month to capitalize on the current trend.",
             "confidence": "High"
         },
@@ -123,3 +137,25 @@ def get_recommendations():
             "confidence": "High"
         }
     ]
+
+def get_report_summary():
+    """Generates a text summary for the executive report."""
+    return (
+        "## 📑 Executive Summary Report\n\n"
+        "**Date:** " + datetime.today().strftime('%Y-%m-%d') + "\n\n"
+        "### 1. Overall Performance\n"
+        "Across all tracked channels (LinkedIn, Instagram, Website), The Insight Room has seen a **steady increase** in engagement "
+        "and visitor traffic. The **Video-First** content strategy is yielding significant results, particularly on Instagram and LinkedIn, "
+        "where engagement rates have outperformed benchmarks by **15-20%**.\n\n"
+        "### 2. Channel Highlights\n"
+        "- **LinkedIn:** Strong growth in the CTO/VP segment. Recommendation: Double down on thought leadership.\n"
+        "- **Instagram:** High traction on Reels. Recommendation: Increase posting frequency to daily.\n"
+        "- **Website:** Traffic up 12% MoM, largely driven by organic search. Recommendation: optimize landing pages for conversion.\n\n"
+        "### 3. Competitive Landscape\n"
+        "Competitor 'TechFlow' is aggressively targeting our core keywords. "
+        "We recommend an immediate counter-campaign focusing on 'Responsible AI' to maintain market leadership.\n\n"
+        "### 4. Next Steps\n"
+        "1. Approve the Q3 Video Budget.\n"
+        "2. Launch the 'AI Ethics' whitepaper series.\n"
+        "3. Review the paid ad strategy for the Executive Persona segment."
+    )
