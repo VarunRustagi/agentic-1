@@ -1,0 +1,600 @@
+
+Collecting usage statistics. To deactivate, set browser.gatherUsageStats to false.
+
+/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+
+  You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://10.121.20.111:8501
+  External URL: http://14.195.208.14:8501
+
+  For better performance, install the Watchdog module:
+
+  $ xcode-select --install
+  $ pip install watchdog
+            
+2025-12-18 16:33:38.118 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-18 16:34:18.897 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-18 16:34:51.420 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-18 16:35:13.231 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-18 16:35:16.692 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-18 16:36:49.421 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 6, in <module>
+    from llm_service import InsightAgent
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/llm_service.py", line 2, in <module>
+    from dotenv import load_dotenv
+ModuleNotFoundError: No module named 'dotenv'
+2025-12-18 16:37:35.589 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 6, in <module>
+    from llm_service import InsightAgent
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/llm_service.py", line 2, in <module>
+    from dotenv import load_dotenv
+ModuleNotFoundError: No module named 'dotenv'
+2025-12-18 16:38:06.538 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 6, in <module>
+    from llm_service import InsightAgent
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/llm_service.py", line 2, in <module>
+    from dotenv import load_dotenv
+ModuleNotFoundError: No module named 'dotenv'
+/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/api_core/_python_version_support.py:252: FutureWarning:
+
+You are using a Python version (3.9.6) past its end of life. Google will update google.api_core with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.api_core.
+
+/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/api_core/_python_version_support.py:252: FutureWarning:
+
+You are using a Python version (3.9.6) past its end of life. Google will update google.cloud.aiplatform_v1beta1 with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.cloud.aiplatform_v1beta1.
+
+/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/api_core/_python_version_support.py:252: FutureWarning:
+
+You are using a Python version (3.9.6) past its end of life. Google will update google.cloud.aiplatform_v1 with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.cloud.aiplatform_v1.
+
+/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/api_core/_python_version_support.py:252: FutureWarning:
+
+You are using a Python version (3.9.6) past its end of life. Google will update google.cloud.aiplatform.v1.schema.predict.instance_v1 with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.cloud.aiplatform.v1.schema.predict.instance_v1.
+
+/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/api_core/_python_version_support.py:252: FutureWarning:
+
+You are using a Python version (3.9.6) past its end of life. Google will update google.cloud.aiplatform.v1.schema.predict.params_v1 with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.cloud.aiplatform.v1.schema.predict.params_v1.
+
+/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/api_core/_python_version_support.py:252: FutureWarning:
+
+You are using a Python version (3.9.6) past its end of life. Google will update google.cloud.aiplatform.v1.schema.predict.prediction_v1 with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.cloud.aiplatform.v1.schema.predict.prediction_v1.
+
+/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/api_core/_python_version_support.py:252: FutureWarning:
+
+You are using a Python version (3.9.6) past its end of life. Google will update google.cloud.aiplatform.v1.schema.trainingjob.definition_v1 with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.cloud.aiplatform.v1.schema.trainingjob.definition_v1.
+
+/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/api_core/_python_version_support.py:252: FutureWarning:
+
+You are using a Python version (3.9.6) past its end of life. Google will update google.cloud.aiplatform.v1beta1.schema.predict.instance_v1beta1 with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.cloud.aiplatform.v1beta1.schema.predict.instance_v1beta1.
+
+/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/api_core/_python_version_support.py:252: FutureWarning:
+
+You are using a Python version (3.9.6) past its end of life. Google will update google.cloud.aiplatform.v1beta1.schema.predict.params_v1beta1 with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.cloud.aiplatform.v1beta1.schema.predict.params_v1beta1.
+
+/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/api_core/_python_version_support.py:252: FutureWarning:
+
+You are using a Python version (3.9.6) past its end of life. Google will update google.cloud.aiplatform.v1beta1.schema.predict.prediction_v1beta1 with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.cloud.aiplatform.v1beta1.schema.predict.prediction_v1beta1.
+
+/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/api_core/_python_version_support.py:252: FutureWarning:
+
+You are using a Python version (3.9.6) past its end of life. Google will update google.cloud.aiplatform.v1beta1.schema.trainingjob.definition_v1beta1 with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade to the latest Python version, or at least Python 3.10, and then update google.cloud.aiplatform.v1beta1.schema.trainingjob.definition_v1beta1.
+
+MCP requires Python 3.10 or above. Please upgrade your Python version in order to use it.
+MCP requires Python 3.10 or above. Please upgrade your Python version in order to use it.
+2025-12-18 17:10:50.691 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-18 17:11:26.147 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+Exception in thread Thread-3:
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/llms/openai/openai.py", line 810, in acompletion
+    openai_aclient: AsyncOpenAI = self._get_openai_client(  # type: ignore
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/llms/openai/openai.py", line 385, in _get_openai_client
+    _new_client: Union[OpenAI, AsyncOpenAI] = AsyncOpenAI(
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 488, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/main.py", line 607, in acompletion
+    response = await init_response
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/llms/openai/openai.py", line 883, in acompletion
+    raise OpenAIError(
+litellm.llms.openai.common_utils.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/threading.py", line 973, in _bootstrap_inner
+    self.run()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/threading.py", line 910, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 320, in _asyncio_thread_main
+    asyncio.run(_invoke_run_async())
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/base_events.py", line 642, in run_until_complete
+    return future.result()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 313, in _invoke_run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 443, in run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 427, in _run_with_trace
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 653, in _exec_with_plugin
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 416, in execute
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/agents/base_agent.py", line 294, in run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/agents/llm_agent.py", line 435, in _run_async_impl
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 356, in run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 433, in _run_one_step_async
+    async for llm_response in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 804, in _call_llm_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 788, in _call_llm_with_tracing
+    async for llm_response in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 998, in _run_and_handle_error
+    raise model_error
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 982, in _run_and_handle_error
+    async for response in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/models/lite_llm.py", line 1080, in generate_content_async
+    response = await self.llm_client.acompletion(**completion_args)
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/models/lite_llm.py", line 125, in acompletion
+    return await acompletion(
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/utils.py", line 1646, in wrapper_async
+    raise e
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/utils.py", line 1492, in wrapper_async
+    result = await original_function(*args, **kwargs)
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/main.py", line 626, in acompletion
+    raise exception_type(
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/litellm_core_utils/exception_mapping_utils.py", line 2340, in exception_type
+    raise e
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/litellm_core_utils/exception_mapping_utils.py", line 461, in exception_type
+    raise AuthenticationError(
+litellm.exceptions.AuthenticationError: litellm.AuthenticationError: AuthenticationError: Litellm_proxyException - The api_key client option must be set either by passing api_key to the client or by setting the LITELLM_PROXY_API_KEY environment variable
+2025-12-18 17:12:18.213 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+Exception in thread Thread-6:
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/llms/openai/openai.py", line 810, in acompletion
+    openai_aclient: AsyncOpenAI = self._get_openai_client(  # type: ignore
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/llms/openai/openai.py", line 385, in _get_openai_client
+    _new_client: Union[OpenAI, AsyncOpenAI] = AsyncOpenAI(
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 488, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/main.py", line 607, in acompletion
+    response = await init_response
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/llms/openai/openai.py", line 883, in acompletion
+    raise OpenAIError(
+litellm.llms.openai.common_utils.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/threading.py", line 973, in _bootstrap_inner
+    self.run()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/threading.py", line 910, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 320, in _asyncio_thread_main
+    asyncio.run(_invoke_run_async())
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/base_events.py", line 642, in run_until_complete
+    return future.result()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 313, in _invoke_run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 443, in run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 427, in _run_with_trace
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 653, in _exec_with_plugin
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 416, in execute
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/agents/base_agent.py", line 294, in run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/agents/llm_agent.py", line 435, in _run_async_impl
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 356, in run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 433, in _run_one_step_async
+    async for llm_response in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 804, in _call_llm_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 788, in _call_llm_with_tracing
+    async for llm_response in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 998, in _run_and_handle_error
+    raise model_error
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 982, in _run_and_handle_error
+    async for response in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/models/lite_llm.py", line 1080, in generate_content_async
+    response = await self.llm_client.acompletion(**completion_args)
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/models/lite_llm.py", line 125, in acompletion
+    return await acompletion(
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/utils.py", line 1646, in wrapper_async
+    raise e
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/utils.py", line 1492, in wrapper_async
+    result = await original_function(*args, **kwargs)
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/main.py", line 626, in acompletion
+    raise exception_type(
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/litellm_core_utils/exception_mapping_utils.py", line 2340, in exception_type
+    raise e
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/litellm_core_utils/exception_mapping_utils.py", line 461, in exception_type
+    raise AuthenticationError(
+litellm.exceptions.AuthenticationError: litellm.AuthenticationError: AuthenticationError: Litellm_proxyException - The api_key client option must be set either by passing api_key to the client or by setting the LITELLM_PROXY_API_KEY environment variable
+2025-12-18 22:14:34.328 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-18 22:14:36.250 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-18 22:14:39.790 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-18 22:15:03.320 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-18 22:15:09.851 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-18 22:15:10.097 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-19 10:11:24.540 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+2025-12-19 10:12:19.990 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+Exception in thread Thread-10:
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/llms/openai/openai.py", line 810, in acompletion
+    openai_aclient: AsyncOpenAI = self._get_openai_client(  # type: ignore
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/llms/openai/openai.py", line 385, in _get_openai_client
+    _new_client: Union[OpenAI, AsyncOpenAI] = AsyncOpenAI(
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 488, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/main.py", line 607, in acompletion
+    response = await init_response
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/llms/openai/openai.py", line 883, in acompletion
+    raise OpenAIError(
+litellm.llms.openai.common_utils.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/threading.py", line 973, in _bootstrap_inner
+    self.run()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/threading.py", line 910, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 320, in _asyncio_thread_main
+    asyncio.run(_invoke_run_async())
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/base_events.py", line 642, in run_until_complete
+    return future.result()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 313, in _invoke_run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 443, in run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 427, in _run_with_trace
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 653, in _exec_with_plugin
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 416, in execute
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/agents/base_agent.py", line 294, in run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/agents/llm_agent.py", line 435, in _run_async_impl
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 356, in run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 433, in _run_one_step_async
+    async for llm_response in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 804, in _call_llm_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 788, in _call_llm_with_tracing
+    async for llm_response in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 998, in _run_and_handle_error
+    raise model_error
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 982, in _run_and_handle_error
+    async for response in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/models/lite_llm.py", line 1080, in generate_content_async
+    response = await self.llm_client.acompletion(**completion_args)
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/models/lite_llm.py", line 125, in acompletion
+    return await acompletion(
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/utils.py", line 1646, in wrapper_async
+    raise e
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/utils.py", line 1492, in wrapper_async
+    result = await original_function(*args, **kwargs)
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/main.py", line 626, in acompletion
+    raise exception_type(
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/litellm_core_utils/exception_mapping_utils.py", line 2340, in exception_type
+    raise e
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/litellm_core_utils/exception_mapping_utils.py", line 461, in exception_type
+    raise AuthenticationError(
+litellm.exceptions.AuthenticationError: litellm.AuthenticationError: AuthenticationError: Litellm_proxyException - The api_key client option must be set either by passing api_key to the client or by setting the LITELLM_PROXY_API_KEY environment variable
+2025-12-19 10:15:39.678 Please replace `use_container_width` with `width`.
+
+`use_container_width` will be removed after 2025-12-31.
+
+For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.
+Exception in thread Thread-13:
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/llms/openai/openai.py", line 810, in acompletion
+    openai_aclient: AsyncOpenAI = self._get_openai_client(  # type: ignore
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/llms/openai/openai.py", line 385, in _get_openai_client
+    _new_client: Union[OpenAI, AsyncOpenAI] = AsyncOpenAI(
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 488, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/main.py", line 607, in acompletion
+    response = await init_response
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/llms/openai/openai.py", line 883, in acompletion
+    raise OpenAIError(
+litellm.llms.openai.common_utils.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/threading.py", line 973, in _bootstrap_inner
+    self.run()
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/threading.py", line 910, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 320, in _asyncio_thread_main
+    asyncio.run(_invoke_run_async())
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/asyncio/base_events.py", line 642, in run_until_complete
+    return future.result()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 313, in _invoke_run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 443, in run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 427, in _run_with_trace
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 653, in _exec_with_plugin
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/runners.py", line 416, in execute
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/agents/base_agent.py", line 294, in run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/agents/llm_agent.py", line 435, in _run_async_impl
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 356, in run_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 433, in _run_one_step_async
+    async for llm_response in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 804, in _call_llm_async
+    async for event in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 788, in _call_llm_with_tracing
+    async for llm_response in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 998, in _run_and_handle_error
+    raise model_error
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/flows/llm_flows/base_llm_flow.py", line 982, in _run_and_handle_error
+    async for response in agen:
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/models/lite_llm.py", line 1080, in generate_content_async
+    response = await self.llm_client.acompletion(**completion_args)
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/google/adk/models/lite_llm.py", line 125, in acompletion
+    return await acompletion(
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/utils.py", line 1646, in wrapper_async
+    raise e
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/utils.py", line 1492, in wrapper_async
+    result = await original_function(*args, **kwargs)
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/main.py", line 626, in acompletion
+    raise exception_type(
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/litellm_core_utils/exception_mapping_utils.py", line 2340, in exception_type
+    raise e
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/litellm/litellm_core_utils/exception_mapping_utils.py", line 461, in exception_type
+    raise AuthenticationError(
+litellm.exceptions.AuthenticationError: litellm.AuthenticationError: AuthenticationError: Litellm_proxyException - The api_key client option must be set either by passing api_key to the client or by setting the LITELLM_PROXY_API_KEY environment variable
+2025-12-19 11:16:09.847 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 4, in <module>
+    from demo_utils import get_processed_engagement_data, get_kpi_metrics, get_top_insights, get_strategic_recommendations
+ImportError: cannot import name 'get_processed_engagement_data' from 'demo_utils' (/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_utils.py)
+2025-12-19 11:16:37.824 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 4, in <module>
+    from demo_utils import get_processed_engagement_data, get_kpi_metrics, get_top_insights, get_strategic_recommendations
+ImportError: cannot import name 'get_processed_engagement_data' from 'demo_utils' (/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_utils.py)
+2025-12-19 11:16:55.790 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 4, in <module>
+    from demo_utils import get_processed_engagement_data, get_kpi_metrics, get_top_insights, get_strategic_recommendations
+ImportError: cannot import name 'get_processed_engagement_data' from 'demo_utils' (/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_utils.py)
+2025-12-19 11:18:30.250 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 4, in <module>
+    from demo_utils import get_processed_engagement_data, get_kpi_metrics, get_top_insights, get_strategic_recommendations
+ImportError: cannot import name 'get_processed_engagement_data' from 'demo_utils' (/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_utils.py)
+2025-12-19 11:19:00.654 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 4, in <module>
+    from demo_utils import get_processed_engagement_data, get_kpi_metrics, get_top_insights, get_strategic_recommendations
+ImportError: cannot import name 'get_processed_engagement_data' from 'demo_utils' (/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_utils.py)
+2025-12-19 11:35:31.328 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 4, in <module>
+    import demo_utils as utils
+ImportError: cannot import name 'get_processed_engagement_data' from 'demo_utils' (/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_utils.py)
+2025-12-19 11:35:47.533 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 4, in <module>
+    import demo_utils as utils
+ImportError: cannot import name 'get_processed_engagement_data' from 'demo_utils' (/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_utils.py)
+2025-12-19 11:36:06.066 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 4, in <module>
+    import demo_utils as utils
+ImportError: cannot import name 'get_processed_engagement_data' from 'demo_utils' (/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_utils.py)
+2025-12-19 11:36:33.402 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 4, in <module>
+    import demo_utils as utils
+ImportError: cannot import name 'get_processed_engagement_data' from 'demo_utils' (/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_utils.py)
+2025-12-19 11:38:00.235 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 218, in <module>
+    kpis = utils.get_kpi_metrics()
+AttributeError: module 'demo_utils' has no attribute 'get_kpi_metrics'
+2025-12-19 11:38:16.737 Uncaught app execution
+Traceback (most recent call last):
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 128, in exec_func_with_error_handling
+    result = func()
+  File "/Users/shtlpmac086/Library/Python/3.9/lib/python/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 669, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+  File "/Users/shtlpmac086/.gemini/antigravity/scratch/agentic-1/demo_app.py", line 218, in <module>
+    kpis = utils.get_kpi_metrics()
+AttributeError: module 'demo_utils' has no attribute 'get_kpi_metrics'
+An error occurred: module 'importlib.metadata' has no attribute 'packages_distributions'
+An error occurred: module 'importlib.metadata' has no attribute 'packages_distributions'
+An error occurred: module 'importlib.metadata' has no attribute 'packages_distributions'
+An error occurred: module 'importlib.metadata' has no attribute 'packages_distributions'
+An error occurred: module 'importlib.metadata' has no attribute 'packages_distributions'
+An error occurred: module 'importlib.metadata' has no attribute 'packages_distributions'
+An error occurred: module 'importlib.metadata' has no attribute 'packages_distributions'
+An error occurred: module 'importlib.metadata' has no attribute 'packages_distributions'
+An error occurred: module 'importlib.metadata' has no attribute 'packages_distributions'
+An error occurred: module 'importlib.metadata' has no attribute 'packages_distributions'
+An error occurred: module 'importlib.metadata' has no attribute 'packages_distributions'
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+
+[1;31mGive Feedback / Get Help: https://github.com/BerriAI/litellm/issues/new[0m
+LiteLLM.Info: If you need to debug this error, use `litellm._turn_on_debug()'.
+
+  Stopping...

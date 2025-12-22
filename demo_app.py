@@ -1,0 +1,363 @@
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import dashboard_utils as utils
+
+# --- Page Configuration ---
+st.set_page_config(
+    page_title="The Insight Room",
+    page_icon="🐺",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# --- Theme & CSS System ---
+def inject_custom_css():
+    st.markdown("""
+        <style>
+        /* Import Fonts: Inter (UI) and Outfit (Headers) */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg-body: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --accent-primary: #2563EB;
+            --border-light: #E2E8F0;
+        }
+
+        /* Global Reset */
+        .stApp {
+            background-color: var(--bg-body);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+        }
+        
+        h1, h2, h3, h4, h5 {
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-primary);
+            font-weight: 600 !important;
+        }
+
+        /* Top Bar Styling */
+        .top-bar-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 30px;
+        }
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+            color: #1E293B;
+        }
+        .page-subtext {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* KPI Cards */
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .kpi-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 8px 0;
+        }
+        .kpi-trend {
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .trend-up { color: #10B981; }
+        .trend-down { color: #EF4444; }
+        .trend-neutral { color: #64748B; }
+
+        /* Insight & Recommendation Cards */
+        .content-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 24px;
+            height: 100%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+        .card-main-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            line-height: 1.4;
+            color: #1E293B;
+        }
+        .card-body-text {
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        /* Confidence Badges */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-high { background-color: #ECFDF5; color: #047857; border: 1px solid #D1FAE5; }
+        .badge-medium { background-color: #FFFBEB; color: #B45309; border: 1px solid #FEF3C7; }
+
+        /* Input Panel */
+        .input-panel {
+            background: #F1F5F9;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        /* Hide Streamlit components */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        .stDeployButton {display:none;}
+        
+        /* Sidebar Styling fixes */
+        [data-testid="stSidebar"] {
+            background-color: #FFFFFF;
+            border-right: 1px solid #E2E8F0;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+inject_custom_css()
+
+# --- Sidebar Navigation ---
+with st.sidebar:
+    st.markdown("### 🐺 The Insight Room")
+    st.markdown("---")
+    
+    # Navigation Menu (Mock functionality)
+    menu_options = [
+        "📊 Dashboard", 
+        "📢 Marketing", 
+        "⚔️ Competitor Analysis", 
+        "🌍 Events Intelligence", 
+        "📑 Reports", 
+        "🔗 Evidence & Citations", 
+        "⚙️ Settings"
+    ]
+    
+    selected_menu = st.radio("Navigation", menu_options, index=1, label_visibility="collapsed")
+    
+    st.markdown("---")
+    st.caption("Active Agents")
+    st.success("● Internal Analyst")
+    st.success("● Competitor Scout")
+    
+    st.markdown("---")
+    st.markdown("**Version 1.2.0 (Enterprise)**")
+
+# --- Main Header ---
+col_head_main, col_head_user = st.columns([3, 1])
+
+with col_head_main:
+    st.markdown('<div class="page-title">Marketing Overview – LinkedIn</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtext">Insights generated from approved public sources and analytics data.</div>', unsafe_allow_html=True)
+
+with col_head_user:
+    # User Profile Snippet
+    with st.container():
+        c1, c2 = st.columns([1, 3])
+        with c1:
+            st.markdown("👤", unsafe_allow_html=True) # Placeholder avatar
+        with c2:
+            st.markdown("**Sharanya**")
+            st.caption("CMO • Shorthills AI")
+    
+    # Date Range
+    st.selectbox("Date Range", ["Last 3 Months", "Last 6 Months", "Year to Date"], index=1, label_visibility="collapsed")
+
+st.markdown("---")
+
+# --- Section 1: KPI Cards ---
+kpis = utils.get_kpi_metrics()
+cols = st.columns(len(kpis))
+
+for idx, col in enumerate(cols):
+    item = kpis[idx]
+    trend_color = "trend-up" if item['trend_direction'] == 'up' else ("trend-down" if item['trend_direction'] == 'down' else "trend-neutral")
+    trend_icon = "↑" if item['trend_direction'] == 'up' else ("↓" if item['trend_direction'] == 'down' else "→")
+    
+    with col:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">{item['label']}</div>
+            <div class="kpi-value">{item['value']}</div>
+            <div class="kpi-trend {trend_color}">
+                {trend_icon} {item['trend']} <span style="font-weight:400; color:#94A3B8; margin-left:4px;">{item['helper']}</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# --- Section 2: Charts Area ---
+col_chart_main, col_chart_side = st.columns([2, 1])
+
+with col_chart_main:
+    st.markdown("### 📈 LinkedIn Engagement Trend")
+    df_trend = utils.get_engagement_trend_data()
+    
+    fig = px.line(df_trend, x="Month", y="Engagement Index", 
+                  template="plotly_white", markers=True, line_shape="spline")
+    fig.update_traces(line_color="#2563EB", line_width=4, marker_size=8)
+    fig.update_layout(
+        height=350,
+        margin=dict(l=20, r=20, t=10, b=20),
+        yaxis=dict(showgrid=True, gridcolor='rgba(226, 232, 240, 0.5)'),
+        xaxis=dict(showgrid=False)
+    )
+    st.plotly_chart(fig, use_container_width=True)
+    st.caption("Index calculated based on weighted average of Likes (1x), Comments (2x), and Shares (3x).")
+
+with col_chart_side:
+    st.markdown("### Growth & Activity")
+    df_follow, df_visit = utils.get_supporting_charts_data()
+    
+    # Sparkline-ish Follower Growth
+    st.markdown("**Follower Growth (6 Mo)**")
+    fig_spark = px.bar(df_follow, x="Month", y="Growth", template="plotly_white")
+    fig_spark.update_traces(marker_color="#CBD5E1") # Subtle grey bars
+    fig_spark.update_layout(height=120, margin=dict(l=0,r=0,t=0,b=0), xaxis_title=None, yaxis_title=None)
+    fig_spark.update_yaxes(showgrid=False, showticklabels=False)
+    st.plotly_chart(fig_spark, use_container_width=True, config={'displayModeBar': False})
+    
+    # Visitor Activity
+    st.markdown("**Weekly Visitor Pattern**")
+    fig_visit = px.bar(df_visit, x="Day", y="Visits", template="plotly_white")
+    fig_visit.update_traces(marker_color="#3B82F6")
+    fig_visit.update_layout(height=120, margin=dict(l=0,r=0,t=0,b=0), xaxis_title=None, yaxis_title=None)
+    fig_visit.update_yaxes(showgrid=False, showticklabels=False)
+    st.plotly_chart(fig_visit, use_container_width=True, config={'displayModeBar': False})
+
+st.markdown("---")
+
+# --- Section 3: Top Insights ---
+st.markdown("### 💡 Top Strategic Insights")
+insights = utils.get_insights()
+cols_ins = st.columns(3)
+
+for idx, col in enumerate(cols_ins):
+    item = insights[idx]
+    badge_cls = "badge-high" if item['confidence'] == 'High' else "badge-medium"
+    
+    with col:
+        st.markdown(f"""
+        <div class="content-card">
+            <div>
+                <div class="card-header-row">
+                    <span class="badge {badge_cls}">Confidence: {item['confidence']}</span>
+                </div>
+                <div class="card-main-title">{item['title']}</div>
+                <div class="card-body-text">{item['description']}</div>
+            </div>
+            <div style="font-size:0.85rem; color:#2563EB; font-weight:500; cursor:pointer;">
+                View Evidence &rarr;
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
+
+# --- Section 4: Recommendations ---
+st.markdown("### 🚀 Recommended Actions")
+recs = utils.get_recommendations()
+cols_rec = st.columns(3)
+
+for idx, col in enumerate(cols_rec):
+    item = recs[idx]
+    badge_cls = "badge-high" if item['confidence'] == 'High' else "badge-medium"
+    
+    with col:
+        st.markdown(f"""
+        <div class="content-card" style="border-left: 4px solid #2563EB;">
+            <div>
+                 <div class="card-header-row">
+                    <span class="badge {badge_cls}">{item['confidence']} Confidence</span>
+                </div>
+                <div class="card-main-title">{item['action']}</div>
+                <div class="card-body-text">{item['description']}</div>
+            </div>
+            <button style="
+                background-color:#F1F5F9; 
+                border:none; 
+                padding:8px 16px; 
+                border-radius:6px; 
+                color:#0F172A; 
+                font-size:0.85rem; 
+                font-weight:600; 
+                cursor:pointer;
+                margin-top:10px;">
+                Add to Roadmap
+            </button>
+        </div>
+        """, unsafe_allow_html=True)
+
+st.markdown("---")
+
+# --- Data Input Panel ---
+st.markdown("### 🔌 Data & Competitor Sources")
+with st.container():
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("**Approved Public Sources**")
+        st.text_input("Website URL", placeholder="https://shorthills.ai")
+        st.text_input("LinkedIn Page URL", placeholder="https://linkedin.com/company/shorthills-ai")
+    with c2:
+        st.markdown("**Competitor Benchmarking**")
+        st.text_area("Competitor URLs (one per line)", placeholder="https://competitor.com\nhttps://rival.com")
+        st.button("Run Analysis", type="primary")
+
+# --- Chatbot Overlay (Floating) ---
+# To simulate the floating chat, we use a fixed position button in CSS
+# For the actual interaction, we'll use a sidebar or expander
+with st.expander("💬 Ask The Insight Room", expanded=False):
+    st.markdown("**AI Analyst**")
+    st.chat_message("assistant").write("I've analyzed the latest engagement data. The drop in posting consistency seems to be correlating with the dip in weekend engagement. Shall I draft a schedule?")
+    st.text_input("Ask a question...", placeholder="Why is engagement down?")
+# Force Reload
