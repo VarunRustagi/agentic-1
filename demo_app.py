@@ -417,6 +417,98 @@ def inject_custom_css():
         [data-baseweb="text"] * {
             color: #0F172A !important; /* Black */
         }
+        
+        /* Sidebar expand/collapse buttons - make visible */
+        [data-testid="stSidebar"] button[aria-label*="Close"],
+        [data-testid="stSidebar"] button[aria-label*="Open"],
+        [data-testid="stSidebar"] button[aria-label*="Expand"],
+        [data-testid="stSidebar"] button[aria-label*="Collapse"],
+        button[kind="header"] {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+            border: 1px solid #E2E8F0 !important;
+        }
+        
+        /* Multiselect and selectbox - white background */
+        [data-baseweb="select"],
+        [data-baseweb="select"] input,
+        [data-baseweb="select"] div,
+        [data-baseweb="select"] button,
+        [data-baseweb="select"] span,
+        [data-baseweb="select"] *,
+        [data-baseweb="multiselect"],
+        [data-baseweb="multiselect"] input,
+        [data-baseweb="multiselect"] div,
+        [data-baseweb="multiselect"] button,
+        [data-baseweb="multiselect"] span,
+        [data-baseweb="multiselect"] *,
+        .stSelectbox,
+        .stSelectbox > div,
+        .stSelectbox > div > div,
+        .stSelectbox > div > div > div,
+        .stSelectbox button,
+        .stSelectbox [data-baseweb="select"],
+        .stMultiselect,
+        .stMultiselect > div,
+        .stMultiselect > div > div,
+        .stMultiselect > div > div > div,
+        .stMultiselect button,
+        .stMultiselect [data-baseweb="multiselect"],
+        [data-baseweb="popover"],
+        [data-baseweb="popover"] * {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+        }
+        
+        /* Selectbox dropdown options */
+        [data-baseweb="menu"],
+        [data-baseweb="menu"] li,
+        [data-baseweb="menu"] ul,
+        [data-baseweb="menu"] *,
+        [role="listbox"],
+        [role="listbox"] *,
+        [role="option"] {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+        }
+        
+        /* Multiselect tags/chips */
+        [data-baseweb="tag"],
+        [data-baseweb="tag"] * {
+            background-color: #F1F5F9 !important;
+            color: #0F172A !important;
+        }
+        
+        /* Dropdown arrow icons */
+        [data-baseweb="select"] svg,
+        [data-baseweb="multiselect"] svg {
+            color: #0F172A !important;
+        }
+        
+        /* Chat input - white background */
+        [data-testid="stChatInput"] input,
+        [data-testid="stChatInput"] textarea {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+            border: 1px solid #E2E8F0 !important;
+        }
+        
+        /* Tooltip styling */
+        .tooltip-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #2563EB;
+            color: #FFFFFF;
+            text-align: center;
+            line-height: 16px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: help;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
         </style>
     """, unsafe_allow_html=True)
 
@@ -480,13 +572,12 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("**Version 1.2.1 (Enterprise)**")
 
-
 # --- Main Header ---
 col_head_main, col_head_user = st.columns([3, 1])
 
 with col_head_main:
     st.markdown('<div class="page-title">Marketing Overview</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtext">Insights generated from approved public sources and analytics data.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtext">Insights generated from marketing channels - LinkedIn, Instagram, and Website.</div>', unsafe_allow_html=True)
 
 with col_head_user:
     # Clean header area
@@ -496,29 +587,42 @@ st.markdown("---")
 
 # Handle ingestion if button was clicked
 if st.session_state.ingestion_in_progress and st.session_state.agent_data is None:
-    st.info("Starting data ingestion...")
-    progress_bar = st.progress(0)
-    status_text = st.empty()
+    st.info("Data Ingestion in Progress...")
+    
+    # File processing status
+    status_placeholder = st.empty()
     
     try:
-        status_text.text("Loading LinkedIn data...")
-        progress_bar.progress(20)
+        with status_placeholder.container():
+            st.markdown("**Processing files:**")
+            
+            # Show expected file processing steps
+            file_status = st.empty()
+            file_status.markdown("""
+            - Loading LinkedIn data files...
+            - Loading Instagram data files...
+            - Loading Website data files...
+            - Running analytics agents...
+            - Generating insights...
+            """)
         
-        status_text.text("Loading Instagram data...")
-        progress_bar.progress(40)
-        
-        status_text.text("Loading Website data...")
-        progress_bar.progress(60)
-        
-        status_text.text("Running analytics agents...")
-        progress_bar.progress(80)
-        
+        # Load data (this does all the work)
         agent_data = init_agents()
+        
+        # Update status
+        with status_placeholder.container():
+            if agent_data and agent_data.get('store'):
+                store = agent_data['store']
+                st.success("**Files processed successfully:**")
+                st.markdown(f"""
+                - LinkedIn: {len(store.linkedin_metrics)} records loaded
+                - Instagram: {len(store.instagram_metrics)} records loaded
+                - Website: {len(store.website_metrics)} records loaded
+                """)
+        
+        # Store results
         st.session_state.agent_data = agent_data
         st.session_state.ingestion_in_progress = False
-        
-        progress_bar.progress(100)
-        status_text.text("Data loaded successfully!")
         
         st.success("All data loaded! Dashboard is ready.")
         st.balloons()
@@ -526,8 +630,6 @@ if st.session_state.ingestion_in_progress and st.session_state.agent_data is Non
         
     except Exception as e:
         st.session_state.ingestion_in_progress = False
-        progress_bar.empty()
-        status_text.empty()
         st.error(f"Error loading data: {str(e)}")
         st.exception(e)
 
@@ -624,6 +726,18 @@ def _display_cached_report(report: Dict[str, Any], platform: str):
         for i, rec in enumerate(report['recommendations'], 1):
             st.markdown(f"{i}. {rec}")
 
+def _get_kpi_tooltip(label: str, platform: str) -> str:
+    """Get tooltip text for KPI metrics"""
+    tooltips = {
+        "Avg Engagement Rate": "Average percentage of people who interacted with your content (likes, comments, shares, clicks) relative to total impressions.",
+        "Reach Growth": "Change in the number of unique people who saw your content compared to the previous period.",
+        "Avg Daily Impressions": "Average number of times your content was displayed to users per day.",
+        "Avg Bounce Rate": "Percentage of visitors who leave your website after viewing only one page. Lower is better.",
+        "Page Views Growth": "Change in the number of page views compared to the previous period.",
+        "Unique Visitors": "Number of distinct individuals who visited your website during the period."
+    }
+    return tooltips.get(label, f"Metric: {label}")
+
 def render_dashboard_tab(platform_name):
     # --- Section 1: KPI Cards (REAL DATA FROM AGENTS) ---
     if agent_data:
@@ -638,13 +752,19 @@ def render_dashboard_tab(platform_name):
         trend_color = "trend-up" if item['trend_direction'] == 'up' else ("trend-down" if item['trend_direction'] == 'down' else "trend-neutral")
         trend_icon = ""  # Removed icon
         
+        # Get tooltip text based on metric label
+        tooltip_text = _get_kpi_tooltip(item['label'], platform_name)
+        
         with col:
             st.markdown(f"""
             <div class="kpi-card">
-                <div class="kpi-label">{item['label']}</div>
+                <div class="kpi-label">
+                    {item['label']}
+                    <span class="tooltip-icon" title="{tooltip_text}">!</span>
+                </div>
                 <div class="kpi-value">{item['value']}</div>
                 <div class="kpi-trend {trend_color}">
-                    {item['trend']} <span style="font-weight:400; color:#94A3B8; margin-left:4px;">{item['helper']}</span>
+                    {item['trend']} <span style="font-weight:400; color:#94A3B8; margin-left:4px;">{item['helper']} (Last 30 days)</span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -840,6 +960,16 @@ if "Reports" in selected_menu:
         with report_tab1:
             st.markdown("### LinkedIn Report Generation")
             
+            # Report type explanation
+            with st.expander("ℹ️ Report Type Guide", expanded=False):
+                st.markdown("""
+                **Report Types:**
+                - **Comprehensive**: Full analysis including trends, patterns, correlations, and recommendations
+                - **Trends**: Focus on time-series trends, growth rates, and period-over-period comparisons
+                - **Correlations**: Analyze relationships between different metrics and files
+                - **Executive**: High-level summary (2-3 paragraphs) for C-suite decision making
+                """)
+            
             col1, col2 = st.columns([2, 1])
             with col1:
                 linkedin_files = st.multiselect(
@@ -896,6 +1026,16 @@ if "Reports" in selected_menu:
         with report_tab2:
             st.markdown("### Instagram Report Generation")
             
+            # Report type explanation
+            with st.expander("ℹ️ Report Type Guide", expanded=False):
+                st.markdown("""
+                **Report Types:**
+                - **Comprehensive**: Full analysis including trends, patterns, correlations, and recommendations
+                - **Trends**: Focus on time-series trends, growth rates, and period-over-period comparisons
+                - **Correlations**: Analyze relationships between different metrics and files
+                - **Executive**: High-level summary (2-3 paragraphs) for C-suite decision making
+                """)
+            
             col1, col2 = st.columns([2, 1])
             with col1:
                 instagram_files = st.multiselect(
@@ -951,6 +1091,16 @@ if "Reports" in selected_menu:
         # Website Reports Tab
         with report_tab3:
             st.markdown("### Website Report Generation")
+            
+            # Report type explanation
+            with st.expander("ℹ️ Report Type Guide", expanded=False):
+                st.markdown("""
+                **Report Types:**
+                - **Comprehensive**: Full analysis including trends, patterns, correlations, and recommendations
+                - **Trends**: Focus on time-series trends, growth rates, and period-over-period comparisons
+                - **Correlations**: Analyze relationships between different metrics and files
+                - **Executive**: High-level summary (2-3 paragraphs) for C-suite decision making
+                """)
             
             col1, col2 = st.columns([2, 1])
             with col1:

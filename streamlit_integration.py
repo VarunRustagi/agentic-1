@@ -19,6 +19,15 @@ from src.agents.instagram_report_agent import InstagramReportAgent
 from src.agents.website_report_agent import WebsiteReportAgent
 import numpy as np
 import pandas as pd
+import os
+from dotenv import load_dotenv
+import litellm
+
+# Load environment variables for LLM
+load_dotenv()
+litellm.use_litellm_proxy = True
+API_BASE = os.getenv("LITELLM_PROXY_API_BASE")
+API_KEY = os.getenv("LITELLM_PROXY_GEMINI_API_KEY")
 
 def load_agent_data():
     """
@@ -101,14 +110,14 @@ def get_kpi_metrics_from_agent(platform_name, agent_data):
                 "value": f"{avg_eng_recent:.1%}",
                 "trend": f"{eng_change:+.1f}%",
                 "trend_direction": "up" if eng_change > 0 else "down",
-                "helper": "vs last 30 days"
+                "helper": "vs previous 30 days (Last 30 days basis)"
             },
             {
                 "label": "Reach Growth",
                 "value": f"{reach_change:+.1f}%",
                 "trend": f"{int(avg_reach_recent - avg_reach_prev):+,}",
                 "trend_direction": "up" if reach_change > 0 else "down",
-                "helper": "impressions"
+                "helper": "impressions (Last 30 days basis)"
             },
             {
                 "label": "Avg Daily Impressions",
@@ -137,21 +146,21 @@ def get_kpi_metrics_from_agent(platform_name, agent_data):
                 "value": f"{avg_bounce_recent:.1%}",
                 "trend": f"{bounce_change:+.1f}pp",
                 "trend_direction": "down" if bounce_change < 0 else "up",  # Lower is better
-                "helper": "vs last 30 days"
+                "helper": "vs previous 30 days (Last 30 days basis)"
             },
             {
                 "label": "Page Views Growth",
                 "value": f"{views_change:+.1f}%",
                 "trend": f"{int(avg_views_recent):,}/day",
                 "trend_direction": "up" if views_change > 0 else "down",
-                "helper": "daily average"
+                "helper": "daily average (Last 30 days basis)"
             },
             {
                 "label": "Unique Visitors",
                 "value": f"{int(avg_visitors_recent):,}",
                 "trend": f"+{views_change:.1f}%",
                 "trend_direction": "up" if views_change > 0 else "down",
-                "helper": "daily average"
+                "helper": "daily average (Last 30 days basis)"
             }
         ]
 

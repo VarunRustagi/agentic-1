@@ -185,7 +185,7 @@ class WebsiteReportAgent:
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a website analytics expert. Analyze data and provide comprehensive, actionable insights with specific recommendations. Use markdown formatting for better readability."
+                        "content": "You are a website analytics expert. Analyze data and provide comprehensive, actionable insights with specific recommendations. Use markdown formatting for better readability. Follow these guidelines: 1.  A new website was launched on November 10, 2025 on the same URL, currently the difference in numbers (engagement, content volume etc) is not reflected in the numbers.  Highlight the changes encapsulated in the difference between pre november 10 and post november 10. 2. Add a pointer around geographical distribution of traffic, that is, how much traffic is coming across geographies"
                     },
                     {
                         "role": "user",
