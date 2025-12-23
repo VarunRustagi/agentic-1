@@ -1333,18 +1333,6 @@ def render_dashboard_tab(platform_name):
         badge_cls = "badge-high" if item.get('confidence') == 'High' else "badge-medium"
         
         with col:
-            evidence_html = ""
-            if 'evidence' in item and item['evidence']:
-                evidence_list = "<br>".join([f"• {e}" for e in item['evidence']])
-                evidence_html = f"""
-                <details style="margin-top:12px; font-size:0.85rem; color:#64748B;">
-                    <summary style="cursor:pointer; font-weight:500;">View Evidence</summary>
-                    <div style="margin-top:8px; padding-left:8px; border-left:2px solid #E2E8F0;">
-                        {evidence_list}
-                    </div>
-                </details>
-                """
-            
             # Clean description - aggressively remove all HTML tags and escape special characters
             description = str(item.get('description', ''))
             # Remove any HTML tags that might be in the description (including nested tags)
@@ -1371,7 +1359,6 @@ def render_dashboard_tab(platform_name):
                     </div>
                     <div class="card-main-title">{item.get('title', 'Insight')}</div>
                     <div class="card-body-text">{description}</div>
-                    {evidence_html}
                 </div>
             </div>
             """, unsafe_allow_html=True)
