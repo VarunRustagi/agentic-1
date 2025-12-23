@@ -42,14 +42,14 @@ class LinkedInAnalyticsAgent:
             
         try:
             response = litellm.completion(
-                model="hackathon-gemini-2.5-flash",
+                model="hackathon-gemini-2.5-pro",
                 api_base=API_BASE,
                 api_key=API_KEY,
                 messages=[
                     {"role": "system", "content": "You are a LinkedIn marketing analyst. Provide concise, strategic insights."},
                     {"role": "user", "content": f"{context}\n\n{prompt}"}
                 ],
-                max_tokens=150
+                max_tokens=500
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
@@ -76,8 +76,17 @@ class LinkedInAnalyticsAgent:
         
         change_pct = ((recent_efficiency - prev_efficiency) / prev_efficiency * 100) if prev_efficiency > 0 else 0
         
-        context = f"Recent 30-day engagement efficiency: {recent_efficiency:.2%}. Previous period: {prev_efficiency:.2%}. Change: {change_pct:+.1f}%."
-        summary = self._call_llm("Summarize the LinkedIn engagement trend and recommend next steps.", context)
+        # Structured fact-based prompt
+        context = f"""Facts:
+- Engagement rate (last 30 days): {recent_efficiency:.2%}
+- Previous 30-day engagement rate: {prev_efficiency:.2%}
+- Change: {change_pct:+.1f}%
+- Trend: {'Improving' if change_pct > 0 else 'Declining' if change_pct < 0 else 'Stable'}
+
+Task:
+Explain the implications of this engagement trend and provide 1-2 actionable recommendations based ONLY on these facts. Be concise and specific."""
+        
+        summary = self._call_llm("Analyze this data.", context)
         
         return Insight(
             title="LinkedIn: Engagement Efficiency",
@@ -108,9 +117,23 @@ class LinkedInAnalyticsAgent:
         
         if len(weekly_buckets) < 4:
             return None
-            
-        context = f"Analyzed {len(weekly_buckets)} weeks. Found variable engagement patterns based on activity levels."
-        summary = self._call_llm("What's the optimal LinkedIn posting cadence based on engagement data?", context)
+        
+        # Calculate variance in activity levels
+        impressions_variance = np.std([imp for imp, _ in weekly_buckets])
+        avg_impressions = np.mean([imp for imp, _ in weekly_buckets])
+        variance_pct = (impressions_variance / avg_impressions * 100) if avg_impressions > 0 else 0
+        
+        # Structured fact-based prompt
+        context = f"""Facts:
+- Weeks analyzed: {len(weekly_buckets)}
+- Average weekly impressions: {avg_impressions:,.0f}
+- Posting consistency variance: {variance_pct:.1f}%
+- Consistency level: {'Low (High variance)' if variance_pct > 30 else 'Moderate' if variance_pct > 15 else 'High (Consistent)'}
+
+Task:
+Explain what this posting cadence pattern means for engagement performance and recommend optimal posting frequency based ONLY on these facts. Be specific."""
+        
+        summary = self._call_llm("Analyze this data.", context)
         
         return Insight(
             title="LinkedIn: Posting Cadence Analysis",
@@ -118,6 +141,7 @@ class LinkedInAnalyticsAgent:
             metric_basis=f"{len(weekly_buckets)} weeks analyzed",
             time_range="Last quarter",
             confidence="Medium",
-            evidence=["Weekly engagement aggregation"],
+            evidence=[f"Weekly engagement aggregation"],
             recommendation="Test 3-4 posts per week vs. daily posting."
         )
+

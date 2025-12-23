@@ -39,14 +39,14 @@ class WebsiteAnalyticsAgent:
             
         try:
             response = litellm.completion(
-                model="hackathon-gemini-2.5-flash",
+                model="hackathon-gemini-2.5-pro",
                 api_base=API_BASE,
                 api_key=API_KEY,
                 messages=[
                     {"role": "system", "content": "You are a website analytics specialist. Provide data-driven recommendations."},
                     {"role": "user", "content": f"{context}\n\n{prompt}"}
                 ],
-                max_tokens=150
+                max_tokens=500
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
@@ -66,8 +66,17 @@ class WebsiteAnalyticsAgent:
         # Quality score: lower bounce + higher views = better quality
         quality_score = (1 - avg_bounce_rate) * (avg_page_views / 1000)
         
-        context = f"Avg bounce rate: {avg_bounce_rate:.1%}. Avg page views: {avg_page_views:.0f}/day. Quality score: {quality_score:.2f}."
-        summary = self._call_llm("Assess website traffic quality and recommend improvements.", context)
+        # Structured fact-based prompt
+        context = f"""Facts:
+- Average bounce rate (last 30 days): {avg_bounce_rate:.1%}
+- Average daily page views: {avg_page_views:.0f}
+- Traffic quality score: {quality_score:.2f}
+- Quality level: {'Poor' if avg_bounce_rate > 0.7 else 'Fair' if avg_bounce_rate > 0.5 else 'Good'}
+
+Task:
+Explain what this bounce rate and traffic volume indicate about visitor intent and landing page effectiveness. Provide 1-2 specific recommendations based ONLY on these facts."""
+        
+        summary = self._call_llm("Analyze this data.", context)
         
         return Insight(
             title="Website: Traffic Quality",
@@ -93,8 +102,18 @@ class WebsiteAnalyticsAgent:
             for m in recent
         ])
         
-        context = f"Avg pages per visitor: {avg_pages_per_visitor:.2f}. This indicates engagement depth."
-        summary = self._call_llm("What does our visitor engagement pattern tell us?", context)
+        engagement_level = 'Strong' if avg_pages_per_visitor > 2.5 else 'Moderate' if avg_pages_per_visitor > 1.5 else 'Weak'
+        
+        # Structured fact-based prompt
+        context = f"""Facts:
+- Pages per visitor (last 14 days): {avg_pages_per_visitor:.2f}
+- Engagement depth: {engagement_level}
+- Baseline expectation: 2-3 pages/visitor for good engagement
+
+Task:
+Explain what this visitor behavior pattern indicates about site navigation and content relevance. Recommend specific improvements based ONLY on this metric."""
+        
+        summary = self._call_llm("Analyze this data.", context)
         
         return Insight(
             title="Website: Visitor Engagement",

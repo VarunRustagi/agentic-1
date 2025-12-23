@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import dashboard_utils as utils
+from typing import Dict, Any
 
 # ===== AGENT INTEGRATION =====
 # Our multi-agent system takes precedence - this loads REAL data
@@ -165,13 +166,263 @@ def inject_custom_css():
             background-color: #FFFFFF;
             border-right: 1px solid #E2E8F0;
         }
+
+        /* Fix Streamlit Tabs */
+        button[data-baseweb="tab"] {
+            color: #64748B !important; /* text-secondary */
+            font-weight: 600;
+            background-color: transparent !important;
+        }
+        button[data-baseweb="tab"][aria-selected="true"] {
+            color: #2563EB !important; /* accent-primary */
+            border-bottom-color: #2563EB !important;
+        }
+        button[data-baseweb="tab"] div {
+            color: inherit !important;
+        }
+
+        /* Sidebar Title and Text Visibility */
+        [data-testid="stSidebar"] h3 {
+            color: #0F172A !important;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+        }
+        [data-testid="stSidebar"] .element-container {
+            color: #0F172A;
+        }
+
+        /* Sidebar Menu Radio Button Styling */
+        [data-testid="stSidebar"] label[data-baseweb="radio"] {
+            background-color: transparent;
+            padding: 12px 16px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            font-weight: 500;
+            color: #475569 !important;
+        }
+        [data-testid="stSidebar"] label[data-baseweb="radio"]:hover {
+            background-color: #F8FAFC;
+        }
+        [data-testid="stSidebar"] label[data-baseweb="radio"] input:checked + div {
+            background-color: #EEF2FF !important;
+            color: #2563EB !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Button Styling - Black Text for Primary Buttons */
+        button[kind="primary"],
+        button[data-baseweb="button"][kind="primary"],
+        .stButton > button[kind="primary"],
+        div[data-testid="stButton"] > button[kind="primary"],
+        [data-testid="stButton"] button[kind="primary"] {
+            color: #000000 !important;
+            font-weight: 600 !important;
+        }
+        button[kind="primary"]:hover,
+        button[data-baseweb="button"][kind="primary"]:hover,
+        .stButton > button[kind="primary"]:hover,
+        div[data-testid="stButton"] > button[kind="primary"]:hover {
+            color: #000000 !important;
+        }
+        /* Ensure text is visible in sidebar buttons too */
+        [data-testid="stSidebar"] button[kind="primary"],
+        [data-testid="stSidebar"] .stButton > button[kind="primary"] {
+            color: #000000 !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Global Text Color Enforcement - Black or Grey Only */
+        
+        /* All markdown text - Black */
+        .stMarkdown,
+        .stMarkdown p,
+        .stMarkdown li,
+        .stMarkdown ul,
+        .stMarkdown ol,
+        .stMarkdown h1,
+        .stMarkdown h2,
+        .stMarkdown h3,
+        .stMarkdown h4,
+        .stMarkdown h5,
+        .stMarkdown h6 {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* Captions and helper text - Grey */
+        .stCaption,
+        [data-testid="stCaption"],
+        small {
+            color: #64748B !important; /* Grey */
+        }
+        
+        /* All form labels - Black */
+        label,
+        [data-baseweb="form-control"] label,
+        [data-baseweb="select"] label,
+        [data-baseweb="input"] label,
+        .stSelectbox label,
+        .stMultiselect label,
+        .stTextInput label,
+        .stTextArea label,
+        .stNumberInput label,
+        .stDateInput label,
+        .stTimeInput label,
+        [data-baseweb="label"] {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* Input text values - Black */
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="time"],
+        textarea,
+        select {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* Metric labels and values - Black */
+        [data-testid="stMetricLabel"],
+        [data-testid="stMetricValue"],
+        [data-testid="stMetricDelta"] {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* Info, Warning, Success, Error messages - Black text */
+        .stAlert,
+        [data-baseweb="notification"],
+        .stInfo,
+        .stWarning,
+        .stSuccess,
+        .stError {
+            color: #0F172A !important; /* Black */
+        }
+        .stInfo > div,
+        .stWarning > div,
+        .stSuccess > div,
+        .stError > div {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* Expander text - Black */
+        [data-baseweb="accordion"],
+        .streamlit-expanderHeader,
+        .streamlit-expanderContent {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* Table text - Black */
+        table,
+        .stDataFrame,
+        [data-testid="stDataFrame"] {
+            color: #0F172A !important; /* Black */
+        }
+        table td,
+        table th {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* JSON viewer text - Black */
+        .stJson {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* All headings - Black */
+        h1, h2, h3, h4, h5, h6 {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* List items - Black */
+        li, ul, ol {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* Paragraphs - Black */
+        p {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* Code blocks - Black text on light background */
+        code,
+        pre {
+            color: #0F172A !important; /* Black */
+            background-color: #F1F5F9 !important; /* Light grey background */
+        }
+        
+        /* Links - Keep blue for visibility */
+        a {
+            color: #2563EB !important; /* Blue for links */
+        }
+        a:visited {
+            color: #2563EB !important;
+        }
+        
+        /* Spinner text - Black */
+        .stSpinner {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* Progress bar text - Black */
+        [data-baseweb="progress-bar"] {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* Chat messages - Black text */
+        .stChatMessage {
+            color: #0F172A !important; /* Black */
+        }
+        .stChatMessage p,
+        .stChatMessage div,
+        .stChatMessage span,
+        .stChatMessage * {
+            color: #0F172A !important; /* Black */
+        }
+        /* Chat input - Black text */
+        [data-testid="stChatInput"] input,
+        [data-testid="stChatInput"] textarea,
+        [data-testid="stChatInput"] * {
+            color: #0F172A !important; /* Black */
+        }
+        /* Expander header and content - Black */
+        [data-baseweb="accordion"] button,
+        [data-baseweb="accordion"] summary,
+        .streamlit-expanderHeader,
+        .streamlit-expanderHeader *,
+        .streamlit-expanderContent,
+        .streamlit-expanderContent * {
+            color: #0F172A !important; /* Black */
+        }
+        /* Chat message avatars and containers */
+        [data-testid="stChatMessage"] * {
+            color: #0F172A !important;
+        }
+        /* Ensure chat input placeholder is visible but not too dark */
+        [data-testid="stChatInput"] input::placeholder {
+            color: #64748B !important; /* Grey for placeholder */
+        }
+        
+        /* Sidebar text - Black (captions already handled above as grey) */
+        [data-testid="stSidebar"] p,
+        [data-testid="stSidebar"] div:not(.stCaption):not(small) {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* Streamlit element containers - ensure text is black */
+        .element-container {
+            color: #0F172A !important; /* Black */
+        }
+        
+        /* Override any potential white text in Streamlit widgets */
+        [data-baseweb="text"],
+        [data-baseweb="text"] * {
+            color: #0F172A !important; /* Black */
+        }
         </style>
     """, unsafe_allow_html=True)
 
 inject_custom_css()
 
-# ===== LOAD AGENT DATA (Cached for performance) =====
-@st.cache_resource(show_spinner="Loading intelligence agents...")
+# ===== LOAD AGENT DATA (On-demand) =====
 def init_agents():
     """Initialize all agents and load real data"""
     try:
@@ -180,26 +431,33 @@ def init_agents():
         st.error(f"Agent initialization failed: {e}")
         return None
 
-# Load agent data ONCE
-agent_data = init_agents()
+# Initialize session state for agent data
+if 'agent_data' not in st.session_state:
+    st.session_state.agent_data = None
+if 'ingestion_in_progress' not in st.session_state:
+    st.session_state.ingestion_in_progress = False
+
+# Get agent data from session state
+agent_data = st.session_state.agent_data
 
 # --- Sidebar Navigation ---
 with st.sidebar:
-    st.image("logo.png", use_container_width=True)
+    # Updated 2025-12-31 deprecation fix
+    st.image("logo.png")
     st.markdown("### 🐺 The Insight Room")
     st.markdown("---")
     
     # Navigation Menu
     menu_options = [
-        "📊 Dashboard", 
-        "📢 Marketing", 
-        "📑 Reports"
+        "Dashboard", 
+        "Marketing", 
+        "Reports"
     ]
     
     selected_menu = st.radio("Navigation", menu_options, index=0, label_visibility="collapsed")
     
     st.markdown("---")
-    st.caption("Active Agents")
+    st.caption("Data Status")
     
     if agent_data and agent_data.get('store'):
         store = agent_data['store']
@@ -207,11 +465,17 @@ with st.sidebar:
         n_ig = len(store.instagram_metrics)
         n_web = len(store.website_metrics)
         
-        st.success(f"● LinkedIn Agent ({n_li} records)")
-        st.success(f"● Instagram Agent ({n_ig} records)")
-        st.success(f"● Website Agent ({n_web} records)")
+        st.success(f"LinkedIn ({n_li} records)")
+        st.success(f"Instagram ({n_ig} records)")
+        st.success(f"Website ({n_web} records)")
+    elif st.session_state.ingestion_in_progress:
+        st.info("Loading data...")
     else:
-        st.warning("⚠ Agents initializing...")
+        st.warning("No data loaded")
+        st.markdown("---")
+        if st.button("Load Data", type="primary", use_container_width=True):
+            st.session_state.ingestion_in_progress = True
+            st.rerun()
         
     st.markdown("---")
     st.markdown("**Version 1.2.1 (Enterprise)**")
@@ -225,19 +489,140 @@ with col_head_main:
     st.markdown('<div class="page-subtext">Insights generated from approved public sources and analytics data.</div>', unsafe_allow_html=True)
 
 with col_head_user:
-    # User Profile Snippet
-    with st.container():
-        c1, c2 = st.columns([1, 3])
-        with c1:
-            st.markdown("👤", unsafe_allow_html=True) # Placeholder avatar
-        with c2:
-            st.markdown("**Sharanya**")
-            st.caption("CMO • Shorthills AI")
-    
-    # Date Range
-    st.selectbox("Date Range", ["Last 3 Months", "Last 6 Months", "Year to Date"], index=1, label_visibility="collapsed")
+    # Clean header area
+    st.markdown("")
 
 st.markdown("---")
+
+# Handle ingestion if button was clicked
+if st.session_state.ingestion_in_progress and st.session_state.agent_data is None:
+    st.info("Starting data ingestion...")
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
+    try:
+        status_text.text("Loading LinkedIn data...")
+        progress_bar.progress(20)
+        
+        status_text.text("Loading Instagram data...")
+        progress_bar.progress(40)
+        
+        status_text.text("Loading Website data...")
+        progress_bar.progress(60)
+        
+        status_text.text("Running analytics agents...")
+        progress_bar.progress(80)
+        
+        agent_data = init_agents()
+        st.session_state.agent_data = agent_data
+        st.session_state.ingestion_in_progress = False
+        
+        progress_bar.progress(100)
+        status_text.text("Data loaded successfully!")
+        
+        st.success("All data loaded! Dashboard is ready.")
+        st.balloons()
+        st.rerun()
+        
+    except Exception as e:
+        st.session_state.ingestion_in_progress = False
+        progress_bar.empty()
+        status_text.empty()
+        st.error(f"Error loading data: {str(e)}")
+        st.exception(e)
+
+# Show data loading prompt if no data
+if agent_data is None and not st.session_state.ingestion_in_progress:
+    st.markdown("### 👋 Welcome to The Insight Room")
+    st.markdown("""
+    Get started by loading your data from all sources. This will:
+    - Ingest LinkedIn, Instagram, and Website data
+    - Run AI-powered analytics agents
+    - Generate insights and recommendations
+    
+    **Click the "Load Data" button in the sidebar to begin.**
+    """)
+    st.markdown("---")
+
+def _display_report(report: Dict[str, Any], platform: str, report_type: str):
+    """Helper function to display a generated report"""
+    if 'error' in report:
+        st.error(f"Error: {report['error']}")
+        return
+    
+    # Store report in session state
+    st.session_state[f'{platform}_report'] = report
+    
+    # Display report
+    st.markdown("---")
+    st.markdown("### Generated Report")
+    
+    # Report metadata
+    col_meta1, col_meta2, col_meta3 = st.columns(3)
+    with col_meta1:
+        st.metric("Files Analyzed", len(report.get('files_analyzed', [])))
+    with col_meta2:
+        st.metric("Report Type", report.get('report_type', 'N/A').title())
+    with col_meta3:
+        st.metric("Generated", pd.Timestamp.now().strftime('%H:%M:%S'))
+    
+    st.markdown("---")
+    
+    # Data Summary
+    if 'data_summary' in report:
+        with st.expander("Data Summary", expanded=False):
+            for file_type, summary in report['data_summary'].items():
+                st.markdown(f"**{file_type.title()} File:**")
+                st.json(summary)
+    
+    # Main Analysis
+    st.markdown("### Analysis")
+    st.markdown(report.get('analysis', 'No analysis available'))
+    
+    # Recommendations
+    if report.get('recommendations'):
+        st.markdown("---")
+        st.markdown("### Key Recommendations")
+        for i, rec in enumerate(report['recommendations'], 1):
+            st.markdown(f"{i}. {rec}")
+    
+    # Prepare markdown text for download
+    report_text = f"# {platform.title()} {report_type.title()} Report\n\n"
+    report_text += f"**Generated:** {report.get('generated_at', 'N/A')}\n"
+    report_text += f"**Files Analyzed:** {', '.join(report.get('files_analyzed', []))}\n\n"
+    report_text += "---\n\n"
+    report_text += report.get('analysis', '')
+    if report.get('recommendations'):
+        report_text += "\n\n## Recommendations\n\n"
+        for i, rec in enumerate(report['recommendations'], 1):
+            report_text += f"{i}. {rec}\n"
+    
+    st.session_state[f'{platform}_report_text'] = report_text
+    st.success("Report generated successfully!")
+
+def _display_cached_report(report: Dict[str, Any], platform: str):
+    """Helper function to display a cached report"""
+    st.markdown("---")
+    st.markdown("### Last Generated Report")
+    st.info("Click 'Generate Report' to create a new report or modify settings above.")
+    
+    col_meta1, col_meta2, col_meta3 = st.columns(3)
+    with col_meta1:
+        st.metric("Files Analyzed", len(report.get('files_analyzed', [])))
+    with col_meta2:
+        st.metric("Report Type", report.get('report_type', 'N/A').title())
+    with col_meta3:
+        st.metric("Generated", report.get('generated_at', 'N/A')[:10])
+    
+    st.markdown("---")
+    st.markdown("### Analysis")
+    st.markdown(report.get('analysis', 'No analysis available'))
+    
+    if report.get('recommendations'):
+        st.markdown("---")
+        st.markdown("### Key Recommendations")
+        for i, rec in enumerate(report['recommendations'], 1):
+            st.markdown(f"{i}. {rec}")
 
 def render_dashboard_tab(platform_name):
     # --- Section 1: KPI Cards (REAL DATA FROM AGENTS) ---
@@ -251,7 +636,7 @@ def render_dashboard_tab(platform_name):
     for idx, col in enumerate(cols):
         item = kpis[idx]
         trend_color = "trend-up" if item['trend_direction'] == 'up' else ("trend-down" if item['trend_direction'] == 'down' else "trend-neutral")
-        trend_icon = "↑" if item['trend_direction'] == 'up' else ("↓" if item['trend_direction'] == 'down' else "→")
+        trend_icon = ""  # Removed icon
         
         with col:
             st.markdown(f"""
@@ -259,7 +644,7 @@ def render_dashboard_tab(platform_name):
                 <div class="kpi-label">{item['label']}</div>
                 <div class="kpi-value">{item['value']}</div>
                 <div class="kpi-trend {trend_color}">
-                    {trend_icon} {item['trend']} <span style="font-weight:400; color:#94A3B8; margin-left:4px;">{item['helper']}</span>
+                    {item['trend']} <span style="font-weight:400; color:#94A3B8; margin-left:4px;">{item['helper']}</span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -270,8 +655,19 @@ def render_dashboard_tab(platform_name):
     col_chart_main, col_chart_side = st.columns([2, 1])
 
     with col_chart_main:
-        st.markdown(f"### 📈 {platform_name} Engagement Trend")
-        df_trend = utils.get_engagement_trend_data(platform=platform_name)
+        st.markdown(f"### {platform_name} Engagement Trend")
+        
+        # Use real agent data if available, fallback to synthetic
+        if agent_data:
+            df_trend = agent_integration.get_engagement_trend_data_from_agent(platform_name, agent_data)
+            if df_trend is None:
+                df_trend = utils.get_engagement_trend_data(platform=platform_name)  # Fallback
+                st.caption("Using estimated data (insufficient real data for trend)")
+            else:
+                st.caption("Real data from agent metrics")
+        else:
+            df_trend = utils.get_engagement_trend_data(platform=platform_name)  # Fallback
+            st.caption("Using estimated data (no agent data loaded)")
         
         fig = px.line(df_trend, x="Month", y="Engagement Index", 
                       template="plotly_white", markers=True, line_shape="spline")
@@ -282,12 +678,18 @@ def render_dashboard_tab(platform_name):
             yaxis=dict(showgrid=True, gridcolor='rgba(226, 232, 240, 0.5)'),
             xaxis=dict(showgrid=False)
         )
-        st.plotly_chart(fig, use_container_width=True, key=f"{platform_name}_main_trend")
-        st.caption("Index calculated based on weighted average of various engagement metrics.")
+        st.plotly_chart(fig, key=f"{platform_name}_main_trend", on_select="ignore")
 
     with col_chart_side:
         st.markdown("### Growth & Activity")
-        df_follow, df_visit = utils.get_supporting_charts_data()
+        
+        # Use real agent data if available, fallback to synthetic
+        if agent_data:
+            df_follow, df_visit = agent_integration.get_supporting_charts_data_from_agent(agent_data)
+            if df_follow is None:
+                df_follow, df_visit = utils.get_supporting_charts_data()  # Fallback
+        else:
+            df_follow, df_visit = utils.get_supporting_charts_data()  # Fallback
         
         # Sparkline-ish Follower Growth
         st.markdown("**Follower Growth (6 Mo)**")
@@ -295,7 +697,7 @@ def render_dashboard_tab(platform_name):
         fig_spark.update_traces(marker_color="#CBD5E1") # Subtle grey bars
         fig_spark.update_layout(height=120, margin=dict(l=0,r=0,t=0,b=0), xaxis_title=None, yaxis_title=None)
         fig_spark.update_yaxes(showgrid=False, showticklabels=False)
-        st.plotly_chart(fig_spark, use_container_width=True, config={'displayModeBar': False}, key=f"{platform_name}_spark")
+        st.plotly_chart(fig_spark, config={'displayModeBar': False}, key=f"{platform_name}_spark")
         
         # Visitor Activity
         st.markdown("**Weekly Visitor Pattern**")
@@ -303,12 +705,12 @@ def render_dashboard_tab(platform_name):
         fig_visit.update_traces(marker_color="#3B82F6")
         fig_visit.update_layout(height=120, margin=dict(l=0,r=0,t=0,b=0), xaxis_title=None, yaxis_title=None)
         fig_visit.update_yaxes(showgrid=False, showticklabels=False)
-        st.plotly_chart(fig_visit, use_container_width=True, config={'displayModeBar': False}, key=f"{platform_name}_visit")
+        st.plotly_chart(fig_visit, config={'displayModeBar': False}, key=f"{platform_name}_visit")
 
     st.markdown("---")
 
     # --- Section 3: Top Insights (REAL AGENT INSIGHTS) ---
-    st.markdown("### 💡 Top Strategic Insights")
+    st.markdown("### Top Strategic Insights")
     
     if agent_data:
         insights = agent_integration.get_insights_from_agent(platform_name, agent_data)
@@ -360,7 +762,7 @@ def render_dashboard_tab(platform_name):
     st.markdown("<br>", unsafe_allow_html=True)
 
     # --- Section 4: Recommendations (REAL AGENT RECOMMENDATIONS) ---
-    st.markdown("### 🚀 Recommended Actions")
+    st.markdown("### Recommended Actions")
     
     if agent_data:
         recs = agent_integration.get_recommendations_from_agent(platform_name, agent_data)
@@ -409,66 +811,291 @@ def render_dashboard_tab(platform_name):
             """, unsafe_allow_html=True)
 
 if "Reports" in selected_menu:
-    # --- Executive Report View ---
-    st.markdown("### 📄 Generated Executive Report")
-    
-    # Use real agent executive summary if available
-    if agent_data and 'executive' in agent_data:
-        # Format the executive insights into a report
-        exec_insights = agent_data['executive']
-        report_content = "# PERFORMANCE & STRATEGY REPORT\n\n"
-        report_content += f"**Generated:** {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}\n\n"
-        
-        for insight in exec_insights:
-            report_content += f"## {insight.title}\n"
-            report_content += f"{insight.summary}\n\n"
-            report_content += f"**Metric:** {insight.metric_basis}\n"
-            report_content += f"**Recommendation:** {insight.recommendation}\n\n"
-            report_content += "---\n\n"
-    else:
-        report_content = utils.get_report_summary()  # Fallback
-    
-    st.markdown(report_content)
-    
+    st.markdown('<div class="page-title">Platform Reports</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtext">Generate comprehensive reports from platform data files using AI analysis.</div>', unsafe_allow_html=True)
     st.markdown("---")
-    st.download_button("Download PDF Report", report_content, file_name="executive_report.txt")
+    
+    # Check if data is loaded
+    if agent_data is None and not st.session_state.ingestion_in_progress:
+        st.info("Please load data using the button in the sidebar to generate reports.")
+        st.markdown("""
+        ### How to Generate Reports
+        
+        1. Click **"Load Data"** in the sidebar
+        2. Wait for data ingestion to complete
+        3. Select a platform tab below to generate reports
+        
+        Reports can analyze:
+        - **LinkedIn**: Content, followers, and visitors data
+        - **Instagram**: Posts, audience insights, and interactions
+        - **Website**: Blog traffic, site sessions, and visitor analytics
+        """)
+    elif agent_data is None:
+        st.info("Data is loading... Please wait.")
+    else:
+        # Platform Tabs
+        report_tab1, report_tab2, report_tab3 = st.tabs(["LinkedIn", "Instagram", "Website"])
+        
+        # LinkedIn Reports Tab
+        with report_tab1:
+            st.markdown("### LinkedIn Report Generation")
+            
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                linkedin_files = st.multiselect(
+                    "Choose LinkedIn data files:",
+                    options=['content', 'followers', 'visitors'],
+                    default=['content'],
+                    help="Select one or more files to include in the report"
+                )
+            with col2:
+                linkedin_report_type = st.selectbox(
+                    "Report type:",
+                    options=['comprehensive', 'trends', 'correlations', 'executive'],
+                    index=0,
+                    key="linkedin_report_type"
+                )
+            
+            st.markdown("---")
+            col_btn1, col_btn2 = st.columns([1, 3])
+            with col_btn1:
+                linkedin_generate = st.button("Generate Report", type="primary", use_container_width=True, key="linkedin_generate")
+            with col_btn2:
+                if 'linkedin_report' in st.session_state:
+                    st.download_button(
+                        "Download Report",
+                        st.session_state.get('linkedin_report_text', ''),
+                        file_name=f"linkedin_report_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.md",
+                        mime="text/markdown",
+                        use_container_width=True,
+                        key="linkedin_download"
+                    )
+            
+            if linkedin_generate:
+                if not linkedin_files:
+                    st.warning("Please select at least one file to analyze.")
+                else:
+                    with st.spinner(f"Generating {linkedin_report_type} report..."):
+                        try:
+                            report = agent_integration.generate_linkedin_report(
+                                files=linkedin_files,
+                                report_type=linkedin_report_type
+                            )
+                            if not report:
+                                st.error("Report generation returned no data")
+                            elif 'error' in report:
+                                st.error(f"Error: {report['error']}")
+                            else:
+                                _display_report(report, 'linkedin', linkedin_report_type)
+                        except Exception as e:
+                            st.error(f"Error: {str(e)}")
+            elif 'linkedin_report' in st.session_state:
+                _display_cached_report(st.session_state['linkedin_report'], 'linkedin')
+        
+        # Instagram Reports Tab
+        with report_tab2:
+            st.markdown("### Instagram Report Generation")
+            
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                instagram_files = st.multiselect(
+                    "Choose Instagram data files:",
+                    options=['posts', 'audience_insights', 'content_interactions', 'live_videos', 'profiles_reached'],
+                    default=['posts'],
+                    help="Select one or more files to include in the report"
+                )
+            with col2:
+                instagram_report_type = st.selectbox(
+                    "Report type:",
+                    options=['comprehensive', 'trends', 'correlations', 'executive'],
+                    index=0,
+                    key="instagram_report_type"
+                )
+            
+            st.markdown("---")
+            col_btn1, col_btn2 = st.columns([1, 3])
+            with col_btn1:
+                instagram_generate = st.button("Generate Report", type="primary", use_container_width=True, key="instagram_generate")
+            with col_btn2:
+                if 'instagram_report' in st.session_state:
+                    st.download_button(
+                        "Download Report",
+                        st.session_state.get('instagram_report_text', ''),
+                        file_name=f"instagram_report_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.md",
+                        mime="text/markdown",
+                        use_container_width=True,
+                        key="instagram_download"
+                    )
+            
+            if instagram_generate:
+                if not instagram_files:
+                    st.warning("Please select at least one file to analyze.")
+                else:
+                    with st.spinner(f"Generating {instagram_report_type} report..."):
+                        try:
+                            report = agent_integration.generate_instagram_report(
+                                files=instagram_files,
+                                report_type=instagram_report_type
+                            )
+                            if not report:
+                                st.error("Report generation returned no data")
+                            elif 'error' in report:
+                                st.error(f"Error: {report['error']}")
+                            else:
+                                _display_report(report, 'instagram', instagram_report_type)
+                        except Exception as e:
+                            st.error(f"Error: {str(e)}")
+            elif 'instagram_report' in st.session_state:
+                _display_cached_report(st.session_state['instagram_report'], 'instagram')
+        
+        # Website Reports Tab
+        with report_tab3:
+            st.markdown("### Website Report Generation")
+            
+            col1, col2 = st.columns([2, 1])
+            with col1:
+                website_files = st.multiselect(
+                    "Choose Website data files:",
+                    options=['blog', 'traffic', 'sessions', 'all'],
+                    default=['all'],
+                    help="Select files to include. 'all' will analyze all available files."
+                )
+            with col2:
+                website_report_type = st.selectbox(
+                    "Report type:",
+                    options=['comprehensive', 'trends', 'correlations', 'executive'],
+                    index=0,
+                    key="website_report_type"
+                )
+            
+            st.markdown("---")
+            col_btn1, col_btn2 = st.columns([1, 3])
+            with col_btn1:
+                website_generate = st.button("Generate Report", type="primary", use_container_width=True, key="website_generate")
+            with col_btn2:
+                if 'website_report' in st.session_state:
+                    st.download_button(
+                        "Download Report",
+                        st.session_state.get('website_report_text', ''),
+                        file_name=f"website_report_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.md",
+                        mime="text/markdown",
+                        use_container_width=True,
+                        key="website_download"
+                    )
+            
+            if website_generate:
+                if not website_files:
+                    st.warning("Please select at least one file to analyze.")
+                else:
+                    with st.spinner(f"Generating {website_report_type} report..."):
+                        try:
+                            report = agent_integration.generate_website_report(
+                                files=website_files,
+                                report_type=website_report_type
+                            )
+                            if not report:
+                                st.error("Report generation returned no data")
+                            elif 'error' in report:
+                                st.error(f"Error: {report['error']}")
+                            else:
+                                _display_report(report, 'website', website_report_type)
+                        except Exception as e:
+                            st.error(f"Error: {str(e)}")
+            elif 'website_report' in st.session_state:
+                _display_cached_report(st.session_state['website_report'], 'website')
+        
+        # Executive Summary Section (shown in all tabs)
+        st.markdown("---")
+        st.markdown("### Executive Summary (Cross-Platform)")
+        
+        if agent_data and 'executive' in agent_data:
+            exec_insights = agent_data['executive']
+            for insight in exec_insights:
+                with st.expander(f"{insight.title}", expanded=False):
+                    st.markdown(insight.summary)
+                    st.caption(f"**Metric Basis:** {insight.metric_basis} | **Confidence:** {insight.confidence}")
+                    st.markdown(f"**Recommendation:** {insight.recommendation}")
+        else:
+            st.info("Executive insights will appear here after agents complete analysis.")
 
 else:
     # --- Main Dashboard View (Dashboard & Marketing) ---
     
-    # --- Tabs Implementation ---
-    tab1, tab2, tab3 = st.tabs(["LinkedIn", "Instagram", "Website"])
+    # Check if data is loaded
+    if agent_data is None and not st.session_state.ingestion_in_progress:
+        st.info("Please load data using the button in the sidebar to view the dashboard.")
+    elif agent_data is None:
+        st.info("Data is loading... Please wait.")
+    else:
+        # --- Tabs Implementation ---
+        tab1, tab2, tab3 = st.tabs(["LinkedIn", "Instagram", "Website"])
 
-    with tab1:
-        render_dashboard_tab("LinkedIn")
+        with tab1:
+            render_dashboard_tab("LinkedIn")
 
-    with tab2:
-        render_dashboard_tab("Instagram")
+        with tab2:
+            render_dashboard_tab("Instagram")
 
-    with tab3:
-        render_dashboard_tab("Website")
+        with tab3:
+            render_dashboard_tab("Website")
 
     st.markdown("---")
 
-    # --- Data Input Panel ---
-    st.markdown("### 🔌 Data & Competitor Sources")
-    with st.container():
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("**Approved Public Sources**")
-            st.text_input("Website URL", placeholder="https://shorthills.ai")
-            st.text_input("LinkedIn Page URL", placeholder="https://linkedin.com/company/shorthills-ai")
-        with c2:
-            st.markdown("**Competitor Benchmarking**")
-            st.text_area("Competitor URLs (one per line)", placeholder="https://competitor.com\nhttps://rival.com")
-            st.button("Run Analysis", type="primary")
-
-# --- Chatbot Overlay (Floating) ---
-# To simulate the floating chat, we use a fixed position button in CSS
-# For the actual interaction, we'll use a sidebar or expander
-with st.expander("💬 Ask The Insight Room", expanded=False):
-    st.markdown("**AI Analyst**")
-    st.chat_message("assistant").write("I've analyzed the latest engagement data. The drop in posting consistency seems to be correlating with the dip in weekend engagement. Shall I draft a schedule?")
-    st.text_input("Ask a question...", placeholder="Why is engagement down?")
+# --- Ask The Insight Room Chat Interface ---
+with st.expander("Ask The Insight Room", expanded=False):
+    st.markdown("**AI Analyst** - Ask questions about your marketing data")
+    
+    # Initialize chat history in session state
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
+        # Add welcome message
+        st.session_state.chat_history.append({
+            "role": "assistant",
+            "content": "Hello! I'm your AI analyst. I can help you understand your marketing data across LinkedIn, Instagram, and Website. Ask me anything about trends, performance, or recommendations!"
+        })
+    
+    # Display chat history
+    for message in st.session_state.chat_history:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    
+    # User input
+    user_question = st.chat_input("Ask a question about your data...", key="insight_room_input")
+    
+    if user_question:
+        # Add user message to history
+        st.session_state.chat_history.append({
+            "role": "user",
+            "content": user_question
+        })
+        
+        # Show user message
+        with st.chat_message("user"):
+            st.markdown(user_question)
+        
+        # Generate AI response
+        with st.chat_message("assistant"):
+            with st.spinner("Analyzing data..."):
+                try:
+                    response = agent_integration.ask_insight_room(user_question, agent_data)
+                    st.markdown(response)
+                    # Add assistant response to history
+                    st.session_state.chat_history.append({
+                        "role": "assistant",
+                        "content": response
+                    })
+                except Exception as e:
+                    error_msg = f"Error: {str(e)}"
+                    st.error(error_msg)
+                    st.session_state.chat_history.append({
+                        "role": "assistant",
+                        "content": error_msg
+                    })
+    
+    # Clear chat button
+    if st.session_state.chat_history:
+        if st.button("Clear Chat", key="clear_chat"):
+            st.session_state.chat_history = []
+            st.rerun()
 
 # Force Reload

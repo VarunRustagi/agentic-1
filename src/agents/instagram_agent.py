@@ -39,14 +39,14 @@ class InstagramAnalyticsAgent:
             
         try:
             response = litellm.completion(
-                model="hackathon-gemini-2.5-flash",
+                model="hackathon-gemini-2.5-pro",
                 api_base=API_BASE,
                 api_key=API_KEY,
                 messages=[
                     {"role": "system", "content": "You are an Instagram marketing analyst. Provide concise, actionable insights."},
                     {"role": "user", "content": f"{context}\n\n{prompt}"}
                 ],
-                max_tokens=150
+                max_tokens=500
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
@@ -54,56 +54,82 @@ class InstagramAnalyticsAgent:
     
     def _analyze_reach_vs_engagement(self) -> Insight:
         """Analyze if we're reaching new audiences or just engaging existing"""
-        if len(self.metrics) < 30:
+        total_posts = len(self.metrics)
+        if total_posts < 5:  # Need minimum data
             return None
             
         sorted_metrics = sorted(self.metrics, key=lambda x: x.date)
-        recent_30 = sorted_metrics[-30:]
         
         # High reach + low engagement = discovery mode
         # Low reach + high engagement = retention mode
-        avg_reach = np.mean([m.impressions for m in recent_30])
-        avg_engagement = np.mean([m.engagement_rate for m in recent_30])
+        avg_reach = np.mean([m.impressions for m in sorted_metrics])
+        avg_engagement = np.mean([m.engagement_rate for m in sorted_metrics])
         
-        reach_growth = (recent_30[-1].impressions - recent_30[0].impressions) / recent_30[0].impressions * 100
+        reach_growth = (sorted_metrics[-1].impressions - sorted_metrics[0].impressions) / sorted_metrics[0].impressions * 100 if sorted_metrics[0].impressions > 0 else 0
         
-        context = f"Avg reach: {avg_reach:.0f} impressions. Avg engagement rate: {avg_engagement:.2%}. Reach growth: {reach_growth:+.1f}%."
-        summary = self._call_llm("Are we in discovery or retention mode on Instagram?", context)
+        # Structured fact-based prompt
+        context = f"""Facts:
+- Total posts analyzed: {total_posts}
+- Average reach: {avg_reach:.0f} impressions/post
+- Average engagement rate: {avg_engagement:.2%}
+- Reach trend: {reach_growth:+.1f}%
+- Sample size: {'Limited' if total_posts < 20 else 'Sufficient'}
+
+Task:
+Explain what this reach vs engagement pattern indicates about audience growth strategy. Base recommendations ONLY on these facts. If sample size is limited, acknowledge uncertainty."""
+        
+        summary = self._call_llm("Analyze this data.", context)
+        
+        # Sample-size-based confidence adjustment
+        confidence = "Medium" if total_posts < 20 else "High"
         
         return Insight(
             title="Instagram: Discovery vs. Retention",
             summary=summary,
-            metric_basis=f"Engagement rate: {avg_engagement:.2%}",
-            time_range=f"{recent_30[0].date} to {recent_30[-1].date}",
-            confidence="High",
-            evidence=["Instagram metrics, last 30 days"],
+            metric_basis=f"Engagement rate: {avg_engagement:.2%} ({total_posts} posts)",
+            time_range=f"{sorted_metrics[0].date} to {sorted_metrics[-1].date}",
+            confidence=confidence,
+            evidence=[f"Instagram metrics, {total_posts} posts analyzed"],
             recommendation="Balance viral content with community engagement."
         )
     
     def _analyze_format_performance(self) -> Insight:
         """Analyze Reels vs Posts performance"""
-        if len(self.metrics) < 20:
+        total_posts = len(self.metrics)
+        if total_posts < 5:
             return None
             
-        # Since we're generating synthetic data, we can infer format from engagement patterns
-        # High engagement days = likely Reels
+        # Infer format from engagement patterns (high engagement likely = Reels)
         sorted_metrics = sorted(self.metrics, key=lambda x: x.date)
         
-        high_engagement_days = [m for m in sorted_metrics if m.engagement_rate > 0.10]
-        low_engagement_days = [m for m in sorted_metrics if m.engagement_rate <= 0.10]
+        high_engagement = [m for m in sorted_metrics if m.engagement_rate > 0.10]
+        low_engagement = [m for m in sorted_metrics if m.engagement_rate <= 0.10]
         
-        high_avg = np.mean([m.engagement_rate for m in high_engagement_days]) if high_engagement_days else 0
-        low_avg = np.mean([m.engagement_rate for m in low_engagement_days]) if low_engagement_days else 0
+        high_avg = np.mean([m.engagement_rate for m in high_engagement]) if high_engagement else 0
+        low_avg = np.mean([m.engagement_rate for m in low_engagement]) if low_engagement else 0
         
-        context = f"High-performing content (likely Reels): {high_avg:.2%} avg engagement ({len(high_engagement_days)} days). Lower-performing: {low_avg:.2%} ({len(low_engagement_days)} days)."
-        summary = self._call_llm("Which Instagram format should we prioritize?", context)
+        # Structured fact-based prompt
+        context = f"""Facts:
+- Total posts analyzed: {total_posts}
+- High-engagement posts: {len(high_engagement)} (avg {high_avg:.2%})
+- Lower-engagement posts: {len(low_engagement)} (avg {low_avg:.2%})
+- Performance gap: {(high_avg - low_avg):.2%}
+- Sample size: {'Limited (< 20 posts)' if total_posts < 20 else 'Sufficient'}
+
+Task:
+Recommend content format strategy based ONLY on this engagement data. If sample size is limited, explicitly state the constraint."""
+        
+        summary = self._call_llm("Analyze this data.", context)
+        
+        # Sample-size-based confidence
+        confidence = "Low" if total_posts < 10 else "Medium" if total_posts < 20 else "High"
         
         return Insight(
             title="Instagram: Format Strategy",
             summary=summary,
-            metric_basis=f"Reels: ~{high_avg:.2%} engagement",
-            time_range="Last 60 days",
-            confidence="Medium",
-            evidence=["Format inference from engagement patterns"],
+            metric_basis=f"High-engagement: {high_avg:.2%} ({len(high_engagement)} posts)",
+            time_range=f"{sorted_metrics[0].date} to {sorted_metrics[-1].date}",
+            confidence=confidence,
+            evidence=[f"Format inference from {total_posts} posts"],
             recommendation="Increase Reels production to 60%+ of content mix."
         )

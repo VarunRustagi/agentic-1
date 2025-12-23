@@ -52,48 +52,65 @@ class StrategyAgent:
         
         try:
             response = litellm.completion(
-                model="hackathon-gemini-2.5-flash",
+                model="hackathon-gemini-2.5-pro",
                 api_base=API_BASE,
                 api_key=API_KEY,
                 messages=[
                     {"role": "system", "content": "You are a C-suite strategy advisor. Provide executive-level insights with clear recommendations."},
                     {"role": "user", "content": f"{context}\n\n{prompt}"}
                 ],
-                max_tokens=300
+                max_tokens=800
             )
             return response.choices[0].message.content.strip()
         except Exception as e:
             return f"Analysis unavailable: {str(e)[:100]}"
     
     def _analyze_growth_trend(self) -> Insight:
-        """Cross-platform growth analysis"""
-        # Calculate recent growth for each platform
-        linkedin_growth = self._calculate_platform_growth(self.store.linkedin_metrics, 'impressions')
-        instagram_growth = self._calculate_platform_growth(self.store.instagram_metrics, 'impressions')
-        website_growth = self._calculate_platform_growth(self.store.website_metrics, 'page_views')
+        """Analyze comprehensive growth across all platforms"""
+        # Calculate growth rates
+        li_growth = self._calculate_platform_growth(self.store.linkedin_metrics, 'impressions')
+        ig_growth = self._calculate_platform_growth(self.store.instagram_metrics, 'impressions')
+        web_growth = self._calculate_platform_growth(self.store.website_metrics, 'page_views')
         
-        context = f"LinkedIn: {linkedin_growth:+.1f}% | Instagram: {instagram_growth:+.1f}% | Website: {website_growth:+.1f}%"
-        summary = self._call_llm("Are we growing or declining overall? What's the trend?", context)
+        # Structured fact-based prompt with guardrails
+        context = f"""Facts:
+- LinkedIn 30-day growth: {li_growth:+.1f}%
+- Instagram 30-day growth: {ig_growth:+.1f}%
+- Website traffic 30-day growth: {web_growth:+.1f}%
+- Overall Trend: {'Accelerating' if (li_growth+ig_growth+web_growth) > 10 else 'Stable' if (li_growth+ig_growth+web_growth) > -10 else 'Declining'}
+
+Task:
+Synthesize these growth metrics into a single executive trend statement using ONLY these numbers. Do not speculate on external causes."""
+        
+        summary = self._call_llm("Analyze this cross-platform growth data.", context)
         
         return Insight(
             title="📈 Growth Trend Analysis",
             summary=summary,
-            metric_basis=f"30-day growth rates across platforms",
-            time_range="Last 30 days",
+            metric_basis=f"LI: {li_growth:+.1f}%, IG: {ig_growth:+.1f}%, Web: {web_growth:+.1f}%",
+            time_range="Last 30 days vs Previous 30 days",
             confidence="High",
-            evidence=["LinkedIn, Instagram, Website metrics"],
-            recommendation="Focus resources on highest-growth channel."
+            evidence=["Aggregated platform growth rates"],
+            recommendation="Invest in highest-growth channel to maximize momentum."
         )
     
     def _identify_leakage(self) -> Insight:
-        """Identify where we're losing audience/engagement"""
-        # Check engagement rates and bounce rates
-        linkedin_eng = np.mean([m.engagement_rate for m in self.store.linkedin_metrics[-30:]]) if self.store.linkedin_metrics else 0
-        instagram_eng = np.mean([m.engagement_rate for m in self.store.instagram_metrics[-30:]]) if self.store.instagram_metrics else 0
-        website_bounce = np.mean([m.bounce_rate for m in self.store.website_metrics[-30:]]) if self.store.website_metrics else 0
+        """Identify where we are losing engagement"""
+        li_eng = np.mean([m.engagement_rate for m in self.store.linkedin_metrics[-30:]]) if self.store.linkedin_metrics else 0
+        ig_eng = np.mean([m.engagement_rate for m in self.store.instagram_metrics[-30:]]) if self.store.instagram_metrics else 0
+        web_bounce = np.mean([m.bounce_rate for m in self.store.website_metrics[-30:]]) if self.store.website_metrics else 0
         
-        context = f"LinkedIn engagement: {linkedin_eng:.1%}, Instagram engagement: {instagram_eng:.1%}, Website bounce: {website_bounce:.1%}"
-        summary = self._call_llm("Where are we losing engagement? Identify the leakage points.", context)
+        # Structured fact-based prompt with guardrails
+        context = f"""Facts:
+- LinkedIn engagement rate: {li_eng:.2%}
+- Instagram engagement rate: {ig_eng:.2%}
+- Website bounce rate: {web_bounce:.1%} (High bounce = leakage)
+- Primary leakage point: {'Website' if web_bounce > 0.6 else 'LinkedIn' if li_eng < 0.02 else 'Instagram' if ig_eng < 0.05 else 'None'}
+
+Task:
+Identify the most critical engagement drop-off point based ONLY on these metrics. Explain the business impact without generic advice."""
+        
+        summary = self._call_llm("Analyze engagement leakage points.", context)
         
         return Insight(
             title="⚠️ Leakage Analysis",
@@ -115,9 +132,19 @@ class StrategyAgent:
         }
         
         sorted_platforms = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        top_platform = sorted_platforms[0][0]
         
-        context = f"Platform scores: {sorted_platforms[0][0]} ({sorted_platforms[0][1]:.2f}), {sorted_platforms[1][0]} ({sorted_platforms[1][1]:.2f}), {sorted_platforms[2][0]} ({sorted_platforms[2][1]:.2f})"
-        summary = self._call_llm("Which platform deserves the most attention and resources?", context)
+        # Structured fact-based prompt with guardrails
+        context = f"""Facts:
+- Platform Performance Scores (0-10 scale):
+  - {sorted_platforms[0][0]}: {sorted_platforms[0][1]:.2f} (Top Performer)
+  - {sorted_platforms[1][0]}: {sorted_platforms[1][1]:.2f}
+  - {sorted_platforms[2][0]}: {sorted_platforms[2][1]:.2f}
+
+Task:
+Recommend resource allocation prioritizing the top performing platform. Base the justification ONLY on the calculated scores provided."""
+        
+        summary = self._call_llm("Recommend platform prioritization.", context)
         
         return Insight(
             title="🎯 Platform Prioritization",
@@ -137,8 +164,21 @@ class StrategyAgent:
             for insight in insights_list:
                 all_recommendations.append(f"{platform}: {insight.recommendation}")
         
-        context = "Platform recommendations: " + " | ".join(all_recommendations[:5])
-        summary = self._call_llm("What strategic levers should we pull next quarter?", context)
+        rec_text = " | ".join(all_recommendations[:5])
+        
+        # Structured fact-based prompt with guardrails
+        context = f"""Facts - Platform-level Recommendations:
+{rec_text}
+
+Rules:
+1. Use ONLY the provided platform recommendations.
+2. Do NOT introduce external benchmarks or general knowledge.
+3. Synthesize these into a cohesive C-suite strategy.
+
+Task:
+Create a unified strategic plan for the next quarter based on the specific platform needs identified above."""
+        
+        summary = self._call_llm("Synthesize strategic plan.", context)
         
         return Insight(
             title="🚀 Strategic Recommendations",
