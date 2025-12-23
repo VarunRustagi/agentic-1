@@ -598,7 +598,7 @@ def inject_custom_css():
             color: #0F172A !important;
         }
         
-        /* Status component header button specifically */
+        /* Status component header button specifically - AGGRESSIVE TARGETING */
         [data-testid="stStatus"] > div:first-child,
         [data-testid="stStatus"] > div:first-child > button,
         [data-testid="stStatus"] > div:first-child > div,
@@ -606,11 +606,59 @@ def inject_custom_css():
         [data-testid="stStatus"] > div:first-child > div > span,
         [data-testid="stStatus"] > div:first-child > div > div,
         [data-testid="stStatus"] > div:first-child > div > div > span,
+        [data-testid="stStatus"] > div:first-child > div > div > div,
+        [data-testid="stStatus"] > div:first-child > div > div > div > span,
         [data-testid="stStatus"] label,
-        [data-testid="stStatus"] > label {
+        [data-testid="stStatus"] > label,
+        [data-testid="stStatus"] button[aria-expanded],
+        [data-testid="stStatus"] button[aria-expanded] *,
+        [data-testid="stStatus"] button[aria-expanded] span,
+        [data-testid="stStatus"] button[aria-expanded] div {
             background-color: #FFFFFF !important;
             color: #0F172A !important;
             font-weight: 600 !important;
+        }
+        
+        /* Status component - target all possible nested structures for header */
+        [data-testid="stStatus"] button,
+        [data-testid="stStatus"] button > *,
+        [data-testid="stStatus"] button > * > *,
+        [data-testid="stStatus"] button > * > * > *,
+        [data-testid="stStatus"] [data-baseweb="button"],
+        [data-testid="stStatus"] [data-baseweb="button"] > *,
+        [data-testid="stStatus"] [data-baseweb="button"] > * > * {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+        }
+        
+        /* CRITICAL: Status header text visibility - highest priority */
+        div[data-testid="stStatus"] button,
+        div[data-testid="stStatus"] button *,
+        div[data-testid="stStatus"] button span,
+        div[data-testid="stStatus"] button div,
+        div[data-testid="stStatus"] button p,
+        div[data-testid="stStatus"] button label,
+        div[data-testid="stStatus"] > div > button,
+        div[data-testid="stStatus"] > div > button *,
+        div[data-testid="stStatus"] > div > button span,
+        div[data-testid="stStatus"] > div > button div {
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+            color: #0F172A !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Override any dark theme styles for status component */
+        [data-testid="stStatus"],
+        [data-testid="stStatus"] * {
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+        }
+        
+        /* Ensure text is always black/visible on white background */
+        [data-testid="stStatus"],
+        [data-testid="stStatus"] * {
+            color: #0F172A !important;
         }
         
         /* Status component content area - ensure logs are visible */
@@ -1297,12 +1345,22 @@ def render_dashboard_tab(platform_name):
                 </details>
                 """
             
-            # Clean description - remove any HTML tags and escape special characters
+            # Clean description - aggressively remove all HTML tags and escape special characters
             description = str(item.get('description', ''))
-            # Remove any HTML tags that might be in the description
+            # Remove any HTML tags that might be in the description (including nested tags)
             import re
-            description = re.sub(r'<[^>]+>', '', description)  # Remove all HTML tags
-            # Escape remaining special characters
+            # Remove all HTML tags (including self-closing, nested, and multiline tags)
+            # This regex handles tags that might span multiple lines
+            description = re.sub(r'<[^>]*>', '', description, flags=re.DOTALL)  # Remove all HTML tags (multiline)
+            # Remove any stray closing tags or fragments that might remain
+            description = re.sub(r'</[^>]*>', '', description)  # Remove any remaining closing tags
+            # Remove any HTML-like patterns that might be left
+            description = re.sub(r'<[^>]*$', '', description)  # Remove incomplete opening tags at end
+            # Clean up any extra whitespace/newlines left by removed tags
+            description = re.sub(r'\s+', ' ', description)  # Replace multiple whitespace with single space
+            description = description.strip()
+            # Escape remaining special characters (do this last to avoid double-escaping)
+            description = description.replace('&amp;', '&')  # First unescape if already escaped
             description = description.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
             
             st.markdown(f"""

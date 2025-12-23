@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import re
 from datetime import timedelta
 from dotenv import load_dotenv
 import litellm
@@ -33,6 +34,22 @@ class InstagramAnalyticsAgent:
             
         return insights
     
+    def _sanitize_html(self, text: str) -> str:
+        """Remove all HTML tags from LLM response"""
+        if not text:
+            return ""
+        
+        text = str(text)
+        # Remove all HTML tags (including multiline tags)
+        text = re.sub(r'<[^>]*>', '', text, flags=re.DOTALL)
+        # Remove any stray closing tags or fragments
+        text = re.sub(r'</[^>]*>', '', text)
+        # Remove incomplete opening tags at end
+        text = re.sub(r'<[^>]*$', '', text)
+        # Clean up extra whitespace/newlines left by removed tags
+        text = re.sub(r'\s+', ' ', text)
+        return text.strip()
+    
     def _call_llm(self, prompt: str, context: str) -> str:
         """Helper to call LLM via LiteLLM directly"""
         if not API_BASE or not API_KEY:
@@ -49,7 +66,7 @@ class InstagramAnalyticsAgent:
                 api_base=API_BASE,
                 api_key=API_KEY,
                 messages=[
-                    {"role": "system", "content": "You are an Instagram marketing analyst. Provide concise, actionable insights."},
+                    {"role": "system", "content": "You are an Instagram marketing analyst. Provide concise, actionable insights. Do NOT use HTML tags, markdown formatting, or any markup. Use plain text only."},
                     {"role": "user", "content": f"{context}\n\n{prompt}"}
                 ],
                 max_tokens=500,
@@ -75,7 +92,9 @@ class InstagramAnalyticsAgent:
             if content is None:
                 return "LLM returned None content."
             
-            return content.strip() if content else "LLM returned empty content."
+            # Sanitize HTML from LLM response before returning
+            content = content.strip() if content else "LLM returned empty content."
+            return self._sanitize_html(content)
         except Exception as e:
             return f"Analysis error: {str(e)[:100]}"
     

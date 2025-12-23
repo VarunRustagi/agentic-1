@@ -10,6 +10,7 @@ import threading
 from typing import List
 import hashlib
 import json
+import re
 sys.path.insert(0, os.path.dirname(__file__))
 
 from src.agents.orchestrator_agent import OrchestratorAgent
@@ -398,6 +399,27 @@ def _get_insights_with_hash(platform_name, agent_data, data_hash):
     else:
         return _get_insights_uncached(platform_name, agent_data)
 
+def _sanitize_html(text: str) -> str:
+    """Remove all HTML tags and clean up text"""
+    if not text:
+        return ""
+    
+    text = str(text)
+    # Remove all HTML tags (including multiline tags)
+    text = re.sub(r'<[^>]*>', '', text, flags=re.DOTALL)
+    # Remove any stray closing tags or fragments
+    text = re.sub(r'</[^>]*>', '', text)
+    # Remove incomplete opening tags at end
+    text = re.sub(r'<[^>]*$', '', text)
+    # Clean up extra whitespace/newlines left by removed tags
+    text = re.sub(r'\s+', ' ', text)  # Replace multiple whitespace with single space
+    text = text.strip()
+    # Escape remaining special characters (do this last to avoid double-escaping)
+    text = text.replace('&amp;', '&')  # First unescape if already escaped
+    text = text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+    
+    return text
+
 def _get_insights_uncached(platform_name, agent_data):
     """Uncached version of insights transformation"""
     platform_key = platform_name.lower()
@@ -419,9 +441,16 @@ def _get_insights_uncached(platform_name, agent_data):
         # Safety checks for None values
         title = insight.title if insight.title else "Insight"
         summary = insight.summary if insight.summary else "No summary available."
+        recommendation = insight.recommendation if insight.recommendation else "No recommendation available."
+        
         # Remove error messages from summary if present
         if summary.startswith("Analysis error") or summary.startswith("LLM"):
             summary = "Analysis unavailable. Please check LLM configuration."
+        
+        # Sanitize HTML from all text fields at the source
+        title = _sanitize_html(title)
+        summary = _sanitize_html(summary)
+        recommendation = _sanitize_html(recommendation)
         
         result.append({
             "title": title,
@@ -429,7 +458,7 @@ def _get_insights_uncached(platform_name, agent_data):
             "confidence": insight.confidence if insight.confidence else "Low",
             "evidence": insight.evidence if insight.evidence else [],
             "metric_basis": insight.metric_basis if insight.metric_basis else "N/A",
-            "recommendation": insight.recommendation if insight.recommendation else "No recommendation available."
+            "recommendation": recommendation
         })
     
     return result
@@ -472,6 +501,10 @@ def _get_recommendations_uncached(platform_name, agent_data):
         # Safety checks for None values
         recommendation = insight.recommendation if insight.recommendation else "No recommendation available."
         metric_basis = insight.metric_basis if insight.metric_basis else "N/A"
+        
+        # Sanitize HTML from recommendation and metric_basis
+        recommendation = _sanitize_html(recommendation)
+        metric_basis = _sanitize_html(metric_basis)
         
         result.append({
             "action": recommendation,
