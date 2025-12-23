@@ -29,43 +29,68 @@ This document describes the complete agentic architecture of "The Insight Room" 
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                    INGESTION AGENT (Layer 1)                            │
+│                    ORCHESTRATOR AGENT (Layer 0)                          │
 │  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │  IngestionAgent                                                  │  │
-│  │  • LLM-Powered Schema Discovery                                 │  │
-│  │  • Dynamic File Processing                                       │  │
-│  │  • Data Transformation & Validation                             │  │
+│  │  OrchestratorAgent                                               │  │
+│  │  • Dependency Management                                         │  │
+│  │  • Parallel Execution                                            │  │
+│  │  • Error Handling & Resilience                                   │  │
+│  │  • Execution State Tracking                                      │  │
 │  │                                                                  │  │
 │  │  Methods:                                                       │  │
-│  │  ├─ load_data()                                                 │  │
-│  │  ├─ _load_linkedin_data()    → Uses LLM to map CSV columns     │  │
-│  │  ├─ _load_instagram_data()   → Uses LLM to parse JSON structure│  │
-│  │  └─ _load_website_data()     → Uses LLM to map CSV columns     │  │
+│  │  ├─ execute_all()              → Main orchestration entry point  │  │
+│  │  ├─ _execute_ingestion()      → Phase 1: Sequential            │  │
+│  │  ├─ _execute_platform_agents_parallel() → Phase 2: Parallel    │  │
+│  │  └─ _execute_strategy_agent() → Phase 3: Sequential             │  │
 │  │                                                                  │  │
-│  │  LLM Functions:                                                 │  │
-│  │  ├─ _discover_csv_schema()   → Schema discovery for CSVs       │  │
-│  │  ├─ _discover_instagram_json_schema() → JSON structure analysis│  │
-│  │  └─ _call_llm()              → LiteLLM proxy calls             │  │
+│  │  Features:                                                      │  │
+│  │  • ThreadPoolExecutor for parallel platform agent execution     │  │
+│  │  • Graceful degradation (partial results on failures)          │  │
+│  │  • Execution time tracking per agent                            │  │
+│  │  • Status tracking (SUCCESS, FAILED, SKIPPED)                  │  │
 │  └──────────────────────────────────────────────────────────────────┘  │
 │                              │                                           │
 │                              ▼                                           │
 │  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │  DataStore (Pydantic Models)                                     │  │
-│  │  ├─ linkedin_metrics: List[DailyMetric]                         │  │
-│  │  ├─ instagram_metrics: List[InstagramMetric]                    │  │
-│  │  ├─ website_metrics: List[WebsiteMetric]                       │  │
-│  │  ├─ linkedin_followers: List[LinkedInFollowersMetric]           │  │
-│  │  ├─ linkedin_visitors: List[LinkedInVisitorsMetric]              │  │
-│  │  ├─ instagram_audience_insights: List[InstagramAudienceInsight] │  │
-│  │  ├─ instagram_content_interactions: List[...]                   │  │
-│  │  ├─ instagram_live_videos: List[InstagramLiveVideo]             │  │
-│  │  └─ instagram_profiles_reached: List[InstagramProfilesReached]  │  │
+│  │                    INGESTION AGENT (Layer 1)                    │  │
+│  │  ┌────────────────────────────────────────────────────────────┐  │  │
+│  │  │  IngestionAgent                                           │  │  │
+│  │  │  • LLM-Powered Schema Discovery                          │  │  │
+│  │  │  • Dynamic File Processing                                │  │  │
+│  │  │  • Data Transformation & Validation                      │  │  │
+│  │  │                                                           │  │  │
+│  │  │  Methods:                                                │  │  │
+│  │  │  ├─ load_data()                                         │  │  │
+│  │  │  ├─ _load_linkedin_data()    → Uses LLM to map CSV cols  │  │  │
+│  │  │  ├─ _load_instagram_data()   → Uses LLM to parse JSON    │  │  │
+│  │  │  └─ _load_website_data()     → Uses LLM to map CSV cols  │  │  │
+│  │  │                                                           │  │  │
+│  │  │  LLM Functions:                                           │  │  │
+│  │  │  ├─ _discover_csv_schema()   → Schema discovery         │  │  │
+│  │  │  ├─ _discover_instagram_json_schema() → JSON analysis    │  │  │
+│  │  │  └─ _call_llm()              → LiteLLM proxy calls      │  │  │
+│  │  └────────────────────────────────────────────────────────────┘  │  │
+│  │                              │                                     │  │
+│  │                              ▼                                     │  │
+│  │  ┌────────────────────────────────────────────────────────────┐  │  │
+│  │  │  DataStore (Pydantic Models)                               │  │  │
+│  │  │  ├─ linkedin_metrics: List[DailyMetric]                   │  │  │
+│  │  │  ├─ instagram_metrics: List[InstagramMetric]              │  │  │
+│  │  │  ├─ website_metrics: List[WebsiteMetric]                 │  │  │
+│  │  │  ├─ linkedin_followers: List[LinkedInFollowersMetric]    │  │  │
+│  │  │  ├─ linkedin_visitors: List[LinkedInVisitorsMetric]       │  │  │
+│  │  │  ├─ instagram_audience_insights: List[...]              │  │  │
+│  │  │  ├─ instagram_content_interactions: List[...]           │  │  │
+│  │  │  ├─ instagram_live_videos: List[InstagramLiveVideo]     │  │  │
+│  │  │  └─ instagram_profiles_reached: List[...]              │  │  │
+│  │  └────────────────────────────────────────────────────────────┘  │  │
 │  └──────────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │              PLATFORM ANALYTICS AGENTS (Layer 2)                        │
+│                    (Executed in PARALLEL by Orchestrator)               │
 │                                                                          │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐      │
 │  │ LinkedInAnalytics│  │InstagramAnalytics│  │WebsiteAnalytics  │      │
@@ -247,54 +272,63 @@ This document describes the complete agentic architecture of "The Insight Room" 
 
 ## Agent Flow Sequence
 
-### 1. Data Ingestion Flow
+### 1. Orchestrated Agent Execution Flow
 
 ```
 User Action: Click "Load Data" Button
     │
     ▼
 ┌─────────────────────────────────────┐
-│  IngestionAgent.load_data()         │
+│  OrchestratorAgent.execute_all()     │
 │                                      │
-│  1. _load_linkedin_data()           │
-│     ├─ Discover CSV files           │
-│     ├─ For each file:               │
-│     │  ├─ Read sample data          │
-│     │  ├─ LLM: _discover_csv_schema()│
-│     │  │  └─ Returns: file_type,    │
-│     │  │     mappings, date_format  │
-│     │  ├─ Process based on type:    │
-│     │  │  ├─ "content" → DailyMetric│
-│     │  │  ├─ "followers" →         │
-│     │  │  │   LinkedInFollowersMetric│
-│     │  │  └─ "visitors" →           │
-│     │  │     LinkedInVisitorsMetric │
-│     │  └─ Store in DataStore         │
-│     │                                │
-│  2. _load_instagram_data()          │
-│     ├─ Discover JSON files          │
-│     ├─ For each file:               │
-│     │  ├─ Load JSON                 │
-│     │  ├─ LLM: _discover_instagram_ │
-│     │  │      json_schema()         │
-│     │  │  └─ Returns: file_type,    │
-│     │  │     data_key, paths        │
-│     │  ├─ Process based on type:    │
-│     │  │  ├─ "posts" → InstagramMetric│
-│     │  │  ├─ "audience" →           │
-│     │  │  │   InstagramAudienceInsight│
-│     │  │  └─ (other types) →        │
-│     │  │     Store raw JSON         │
-│     │  └─ Store in DataStore         │
-│     │                                │
-│  3. _load_website_data()            │
-│     ├─ Discover CSV files           │
-│     ├─ For each file:               │
-│     │  ├─ LLM: _discover_csv_schema()│
-│     │  ├─ Process → WebsiteMetric   │
-│     │  └─ Store in DataStore         │
+│  Phase 1: Ingestion (Sequential)     │
+│  ┌────────────────────────────────┐ │
+│  │ _execute_ingestion()           │ │
+│  │  └─> IngestionAgent.load_data()│ │
+│  │      ├─ _load_linkedin_data()  │ │
+│  │      ├─ _load_instagram_data()  │ │
+│  │      └─ _load_website_data()   │ │
+│  │                                 │ │
+│  │  Returns: DataStore             │ │
+│  │  Status: SUCCESS or FAILED     │ │
+│  └────────────────────────────────┘ │
+│         │                            │
+│         ▼ (if SUCCESS)               │
+│  Phase 2: Platform Agents (PARALLEL)│
+│  ┌────────────────────────────────┐ │
+│  │ ThreadPoolExecutor (3 workers) │ │
+│  │                                 │ │
+│  │ Thread 1: LinkedInAnalytics    │ │
+│  │ Thread 2: InstagramAnalytics    │ │
+│  │ Thread 3: WebsiteAnalytics     │ │
+│  │                                 │ │
+│  │ All execute simultaneously     │ │
+│  │ Wait for all to complete       │ │
+│  │                                 │ │
+│  │ Returns: Dict of results       │ │
+│  │ Status: Per-agent tracking     │ │
+│  └────────────────────────────────┘ │
+│         │                            │
+│         ▼ (if at least 1 SUCCESS)   │
+│  Phase 3: Strategy (Sequential)     │
+│  ┌────────────────────────────────┐ │
+│  │ _execute_strategy_agent()      │ │
+│  │  └─> StrategyAgent.generate_  │ │
+│  │      executive_summary()       │ │
+│  │                                 │ │
+│  │  Returns: Executive Insights  │ │
+│  │  Status: SUCCESS, FAILED, or   │ │
+│  │          SKIPPED (if no data)  │ │
+│  └────────────────────────────────┘ │
 │                                      │
-│  Returns: DataStore (populated)      │
+│  Returns: {                          │
+│    'store': DataStore,              │
+│    'linkedin': [Insight],           │
+│    'instagram': [Insight],          │
+│    'website': [Insight],           │
+│    'executive': [Insight],          │
+│    'execution_summary': {...}       │
+│  }                                   │
 └─────────────────────────────────────┘
 ```
 

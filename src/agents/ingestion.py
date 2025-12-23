@@ -3,6 +3,7 @@ import json
 import random
 import os
 import glob
+import hashlib
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
@@ -19,12 +20,22 @@ litellm.use_litellm_proxy = True
 API_BASE = os.getenv("LITELLM_PROXY_API_BASE")
 API_KEY = os.getenv("LITELLM_PROXY_GEMINI_API_KEY")
 
+# Global cache for LLM schema discovery results (keyed by file path + modification time)
+_SCHEMA_CACHE: Dict[str, Dict[str, Any]] = {}
+
 class IngestionAgent:
     """AI-powered data ingestion agent that uses LLMs to understand schemas and extract metrics"""
     
-    def __init__(self, data_dir: str):
+    def __init__(self, data_dir: str, status_writer=None):
         self.data_dir = data_dir
         self.store = DataStore()
+        self.status_writer = status_writer
+    
+    def _log(self, message: str):
+        """Log message to both console and status writer if available"""
+        print(message)
+        if self.status_writer:
+            self.status_writer.write(message)
 
     def load_data(self):
         """Load all data sources: LinkedIn (real), Website (real), Instagram (real)"""
@@ -40,6 +51,24 @@ class IngestionAgent:
         # print("Loading competitors...")
         # self._load_competitors()
         
+        return self.store
+    
+    def load_linkedin_only(self) -> DataStore:
+        """Load only LinkedIn data - for parallel execution"""
+        self._log("Loading LinkedIn data...")
+        self._load_linkedin_data()
+        return self.store
+    
+    def load_website_only(self) -> DataStore:
+        """Load only Website data - for parallel execution"""
+        self._log("Loading Website data...")
+        self._load_website_data()
+        return self.store
+    
+    def load_instagram_only(self) -> DataStore:
+        """Load only Instagram data - for parallel execution"""
+        self._log("Loading Instagram data...")
+        self._load_instagram_data()
         return self.store
     
     def _complete_truncated_json(self, json_str: str) -> str:
@@ -96,6 +125,13 @@ class IngestionAgent:
                 max_tokens=2000,  # Increased to prevent truncation
                 response_format={"type": "json_object"}
             )
+            
+            # Track token usage
+            try:
+                from .token_tracker import record_llm_call
+                record_llm_call("IngestionAgent", "schema_discovery", response, "hackathon-gemini-2.5-pro")
+            except Exception as e:
+                print(f"    ⚠ Could not track token usage: {e}")
             
             # Handle None response
             if not response:
@@ -199,17 +235,17 @@ class IngestionAgent:
         """Load LinkedIn data from all CSV files using LLM for schema discovery"""
         linkedin_dir = f"{self.data_dir}/src/data/linkedin"
         if not os.path.exists(linkedin_dir):
-            print(f"✗ LinkedIn directory not found: {linkedin_dir}")
+            self._log(f"✗ LinkedIn directory not found: {linkedin_dir}")
             return
         
         # Discover all CSV files
         csv_files = glob.glob(f"{linkedin_dir}/*.csv")
-        print(f"  Found {len(csv_files)} CSV files")
+        self._log(f"  Found {len(csv_files)} CSV files")
         
         for csv_path in csv_files:
             try:
                 filename = os.path.basename(csv_path)
-                print(f"  Processing: {filename}")
+                self._log(f"  Processing: {filename}")
                 
                 # Read sample of CSV to understand structure
                 df = pd.read_csv(csv_path, nrows=5)
@@ -220,7 +256,7 @@ class IngestionAgent:
                 
                 if schema_info:
                     file_type = schema_info.get('file_type', 'unknown')
-                    print(f"    → LLM identified: {file_type} file")
+                    self._log(f"    → LLM identified: {file_type} file")
                     
                     # Check if this file type can be processed
                     if file_type == 'content':
@@ -230,29 +266,47 @@ class IngestionAgent:
                     elif file_type == 'visitors':
                         self._process_linkedin_visitors(csv_path, schema_info)
                     elif file_type == 'other':
-                        print(f"    → Skipping {file_type} file (not in current data model)")
+                        self._log(f"    → Skipping {file_type} file (not in current data model)")
                     else:
                         # Try to process anyway if we have valid mappings
                         mappings = schema_info.get('mappings', {})
                         if any(mappings.get(k) for k in ['impressions', 'clicks', 'reactions']):
                             self._process_linkedin_csv(csv_path, schema_info)
                         else:
-                            print(f"    → Skipping {file_type} file (no valid metric mappings)")
+                            self._log(f"    → Skipping {file_type} file (no valid metric mappings)")
                 else:
                     # Fallback: try to infer from filename and columns
-                    print(f"    → Using heuristic mapping")
+                    self._log(f"    → Using heuristic mapping")
                     self._process_linkedin_csv_heuristic(csv_path, columns)
                     
             except Exception as e:
-                print(f"    ✗ Error processing {filename}: {e}")
+                self._log(f"    ✗ Error processing {filename}: {e}")
                 continue
         
-        print(f"✓ Loaded {len(self.store.linkedin_metrics)} LinkedIn content records")
-        print(f"✓ Loaded {len(self.store.linkedin_followers)} LinkedIn followers records")
-        print(f"✓ Loaded {len(self.store.linkedin_visitors)} LinkedIn visitors records")
+        self._log(f"✓ Loaded {len(self.store.linkedin_metrics)} LinkedIn content records")
+        self._log(f"✓ Loaded {len(self.store.linkedin_followers)} LinkedIn followers records")
+        self._log(f"✓ Loaded {len(self.store.linkedin_visitors)} LinkedIn visitors records")
+    
+    def _get_file_cache_key(self, filepath: str) -> str:
+        """Generate cache key based on file path and modification time"""
+        try:
+            mtime = os.path.getmtime(filepath)
+            # Use path + modification time as cache key
+            cache_key = f"{filepath}:{mtime}"
+            return hashlib.md5(cache_key.encode()).hexdigest()
+        except:
+            # Fallback to just filepath if mtime unavailable
+            return hashlib.md5(filepath.encode()).hexdigest()
     
     def _discover_csv_schema(self, filepath: str, columns: List[str], platform: str) -> Optional[Dict[str, Any]]:
         """Use LLM to discover CSV schema and map to our data models"""
+        # Check cache first
+        cache_key = self._get_file_cache_key(filepath)
+        if cache_key in _SCHEMA_CACHE:
+            cached_result = _SCHEMA_CACHE[cache_key]
+            print(f"    💾 Using cached schema for {os.path.basename(filepath)}")
+            return cached_result
+        
         # Read first few rows for context (simplified format)
         try:
             df_sample = pd.read_csv(filepath, nrows=3)
@@ -291,7 +345,14 @@ Return ONLY valid JSON (no markdown, no code blocks) with this structure:
   "extraction_strategy": "description"
 }}"""
         
-        return self._call_llm("Analyze the schema. Return JSON only - use null for fields that don't exist.", context)
+        schema_result = self._call_llm("Analyze the schema. Return JSON only - use null for fields that don't exist.", context)
+        
+        # Cache the result if successful
+        if schema_result:
+            cache_key = self._get_file_cache_key(filepath)
+            _SCHEMA_CACHE[cache_key] = schema_result
+        
+        return schema_result
     
     def _process_linkedin_csv(self, csv_path: str, schema_info: Dict[str, Any]):
         """Process LinkedIn CSV using LLM-discovered schema"""
@@ -480,12 +541,12 @@ Return ONLY valid JSON (no markdown, no code blocks) with this structure:
         """Load Website data from all CSV files using LLM for schema discovery"""
         website_dir = f"{self.data_dir}/src/data/website"
         if not os.path.exists(website_dir):
-            print(f"✗ Website directory not found: {website_dir}")
+            self._log(f"✗ Website directory not found: {website_dir}")
             return
         
         # Discover all CSV files
         csv_files = glob.glob(f"{website_dir}/*.csv")
-        print(f"  Found {len(csv_files)} CSV files")
+        self._log(f"  Found {len(csv_files)} CSV files")
         
         # Aggregate data from all files
         daily_metrics = {}  # date -> aggregated metrics
@@ -503,7 +564,7 @@ Return ONLY valid JSON (no markdown, no code blocks) with this structure:
                 schema_info = self._discover_website_csv_schema(csv_path, columns)
                 
                 if schema_info:
-                    print(f"    → LLM identified: {schema_info.get('file_type', 'unknown')} file")
+                    self._log(f"    → LLM identified: {schema_info.get('file_type', 'unknown')} file")
                     self._process_website_csv(csv_path, schema_info, daily_metrics)
                 else:
                     # Fallback: heuristic processing
@@ -525,7 +586,7 @@ Return ONLY valid JSON (no markdown, no code blocks) with this structure:
             )
             self.store.website_metrics.append(metric)
         
-        print(f"✓ Loaded {len(self.store.website_metrics)} Website records total")
+        self._log(f"✓ Loaded {len(self.store.website_metrics)} Website records total")
     
     def _discover_website_csv_schema(self, filepath: str, columns: List[str]) -> Optional[Dict[str, Any]]:
         """Use LLM to discover website CSV schema"""
@@ -561,7 +622,14 @@ Task: Return JSON with:
   "extraction_strategy": "how to extract/aggregate metrics"
 }}"""
         
-        return self._call_llm("Analyze the schema.", context)
+        schema_result = self._call_llm("Analyze the schema.", context)
+        
+        # Cache the result if successful
+        if schema_result:
+            cache_key = self._get_file_cache_key(filepath)
+            _SCHEMA_CACHE[cache_key] = schema_result
+        
+        return schema_result
     
     def _process_website_csv(self, csv_path: str, schema_info: Dict[str, Any], daily_metrics: Dict):
         """Process website CSV using LLM-discovered schema"""
@@ -703,12 +771,12 @@ Task: Return JSON with:
         """Load Instagram data from all JSON files using LLM for schema discovery"""
         instagram_dir = f"{self.data_dir}/src/data/instagram"
         if not os.path.exists(instagram_dir):
-            print(f"✗ Instagram directory not found: {instagram_dir}")
+            self._log(f"✗ Instagram directory not found: {instagram_dir}")
             return
         
         # Discover all JSON files
         json_files = glob.glob(f"{instagram_dir}/*.json")
-        print(f"  Found {len(json_files)} JSON files")
+        self._log(f"  Found {len(json_files)} JSON files")
         
         for json_path in json_files:
             try:
@@ -722,7 +790,7 @@ Task: Return JSON with:
                 schema_info = self._discover_instagram_json_schema(json_path, data)
                 
                 if schema_info:
-                    print(f"    → LLM identified: {schema_info.get('file_type', 'unknown')} file")
+                    self._log(f"    → LLM identified: {schema_info.get('file_type', 'unknown')} file")
                     self._process_instagram_json(data, schema_info)
                 else:
                     # Fallback: heuristic processing
@@ -733,14 +801,21 @@ Task: Return JSON with:
                 print(f"    ✗ Error processing {filename}: {e}")
                 continue
         
-        print(f"✓ Loaded {len(self.store.instagram_metrics)} Instagram post records")
-        print(f"✓ Stored {len(self.store.instagram_audience_insights)} audience insights files")
-        print(f"✓ Stored {len(self.store.instagram_content_interactions)} content interactions files")
-        print(f"✓ Stored {len(self.store.instagram_live_videos)} live videos files")
-        print(f"✓ Stored {len(self.store.instagram_profiles_reached)} profiles reached files")
+        self._log(f"✓ Loaded {len(self.store.instagram_metrics)} Instagram post records")
+        self._log(f"✓ Stored {len(self.store.instagram_audience_insights)} audience insights files")
+        self._log(f"✓ Stored {len(self.store.instagram_content_interactions)} content interactions files")
+        self._log(f"✓ Stored {len(self.store.instagram_live_videos)} live videos files")
+        self._log(f"✓ Stored {len(self.store.instagram_profiles_reached)} profiles reached files")
     
     def _discover_instagram_json_schema(self, filepath: str, data: Dict) -> Optional[Dict[str, Any]]:
         """Use LLM to discover Instagram JSON schema"""
+        # Check cache first
+        cache_key = self._get_file_cache_key(filepath)
+        if cache_key in _SCHEMA_CACHE:
+            cached_result = _SCHEMA_CACHE[cache_key]
+            print(f"    💾 Using cached schema for {os.path.basename(filepath)}")
+            return cached_result
+        
         # Sample first entry for context
         sample_entry = None
         top_level_keys = list(data.keys())
@@ -778,8 +853,15 @@ Task: Return JSON with:
   }},
   "extraction_strategy": "how to extract daily metrics from this file type"
 }}"""
+
+        schema_result = self._call_llm("Analyze the schema.", context)
         
-        return self._call_llm("Analyze the schema.", context)
+        # Cache the result if successful
+        if schema_result:
+            cache_key = self._get_file_cache_key(filepath)
+            _SCHEMA_CACHE[cache_key] = schema_result
+        
+        return schema_result
     
     def _process_instagram_json(self, data: Dict, schema_info: Dict[str, Any]):
         """Process Instagram JSON using LLM-discovered schema"""
@@ -793,7 +875,7 @@ Task: Return JSON with:
                     raw_data=data
                 )
                 self.store.instagram_audience_insights.append(insight)
-                print(f"    → Stored audience insights data (raw JSON)")
+                self._log(f"    → Stored audience insights data (raw JSON)")
                 return
             elif file_type == 'interactions':
                 interaction = InstagramContentInteraction(
@@ -801,7 +883,7 @@ Task: Return JSON with:
                     raw_data=data
                 )
                 self.store.instagram_content_interactions.append(interaction)
-                print(f"    → Stored content interactions data (raw JSON)")
+                self._log(f"    → Stored content interactions data (raw JSON)")
                 return
             elif file_type == 'live_videos':
                 video = InstagramLiveVideo(
@@ -809,7 +891,7 @@ Task: Return JSON with:
                     raw_data=data
                 )
                 self.store.instagram_live_videos.append(video)
-                print(f"    → Stored live videos data (raw JSON)")
+                self._log(f"    → Stored live videos data (raw JSON)")
                 return
             elif file_type == 'profiles_reached':
                 reached = InstagramProfilesReached(
@@ -817,10 +899,10 @@ Task: Return JSON with:
                     raw_data=data
                 )
                 self.store.instagram_profiles_reached.append(reached)
-                print(f"    → Stored profiles reached data (raw JSON)")
+                self._log(f"    → Stored profiles reached data (raw JSON)")
                 return
             elif file_type != 'posts':
-                print(f"    → Skipping {file_type} file (not mapped)")
+                self._log(f"    → Skipping {file_type} file (not mapped)")
                 return
             
             # Process posts file (mapped to InstagramMetric)

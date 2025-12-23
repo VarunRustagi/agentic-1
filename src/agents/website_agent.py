@@ -13,8 +13,9 @@ API_KEY = os.getenv("LITELLM_PROXY_GEMINI_API_KEY")
 class WebsiteAnalyticsAgent:
     """Specialized agent for Website performance analysis"""
     
-    def __init__(self, store: DataStore):
+    def __init__(self, store: DataStore, status_writer=None):
         self.metrics = store.website_metrics
+        self.status_writer = status_writer
         
     def analyze(self) -> list[Insight]:
         """Generate Website-specific insights"""
@@ -35,9 +36,14 @@ class WebsiteAnalyticsAgent:
     def _call_llm(self, prompt: str, context: str) -> str:
         """Helper to call LLM via LiteLLM directly"""
         if not API_BASE or not API_KEY:
+            print("    ⚠ LLM API not configured, using fallback")
             return "LLM unavailable."
             
         try:
+            msg = "    🔄 Calling LLM for analysis..."
+            print(msg)
+            if self.status_writer:
+                self.status_writer.write(msg)
             response = litellm.completion(
                 model="hackathon-gemini-2.5-pro",
                 api_base=API_BASE,
@@ -46,9 +52,30 @@ class WebsiteAnalyticsAgent:
                     {"role": "system", "content": "You are a website analytics specialist. Provide data-driven recommendations."},
                     {"role": "user", "content": f"{context}\n\n{prompt}"}
                 ],
-                max_tokens=500
+                max_tokens=500,
+                timeout=30  # 30 second timeout
             )
-            return response.choices[0].message.content.strip()
+            
+            # Track token usage
+            try:
+                from .token_tracker import record_llm_call
+                record_llm_call("WebsiteAnalyticsAgent", "insight_generation", response, "hackathon-gemini-2.5-pro")
+            except Exception as e:
+                print(f"    ⚠ Could not track token usage: {e}")
+            
+            msg = "    ✓ LLM response received"
+            print(msg)
+            if self.status_writer:
+                self.status_writer.write(msg)
+            # Handle None response
+            if not response or not response.choices or len(response.choices) == 0:
+                return "LLM returned empty response."
+            
+            content = response.choices[0].message.content
+            if content is None:
+                return "LLM returned None content."
+            
+            return content.strip() if content else "LLM returned empty content."
         except Exception as e:
             return f"Analysis error: {str(e)[:100]}"
     
@@ -77,6 +104,11 @@ Task:
 Explain what this bounce rate and traffic volume indicate about visitor intent and landing page effectiveness. Provide 1-2 specific recommendations based ONLY on these facts."""
         
         summary = self._call_llm("Analyze this data.", context)
+        
+        # Provide fallback if LLM failed
+        if not summary or summary.startswith("Analysis error") or summary.startswith("LLM"):
+            quality_level = 'Poor' if avg_bounce_rate > 0.7 else 'Fair' if avg_bounce_rate > 0.5 else 'Good'
+            summary = f"Bounce rate: {avg_bounce_rate:.1%} ({quality_level.lower()} quality). Average daily page views: {avg_page_views:.0f}. {'High bounce suggests poor landing page relevance or slow load times' if avg_bounce_rate > 0.6 else 'Good engagement indicates effective content and navigation'}."
         
         return Insight(
             title="Website: Traffic Quality",
@@ -114,6 +146,10 @@ Task:
 Explain what this visitor behavior pattern indicates about site navigation and content relevance. Recommend specific improvements based ONLY on this metric."""
         
         summary = self._call_llm("Analyze this data.", context)
+        
+        # Provide fallback if LLM failed
+        if not summary or summary.startswith("Analysis error") or summary.startswith("LLM"):
+            summary = f"Visitor engagement depth: {avg_pages_per_visitor:.2f} pages per visitor ({engagement_level.lower()} engagement). {'Strong engagement indicates effective navigation' if engagement_level == 'Strong' else 'Improve internal linking and content relevance to increase pages per visit'}."
         
         return Insight(
             title="Website: Visitor Engagement",

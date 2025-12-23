@@ -13,8 +13,9 @@ API_KEY = os.getenv("LITELLM_PROXY_GEMINI_API_KEY")
 class LinkedInAnalyticsAgent:
     """Specialized agent for LinkedIn performance analysis"""
     
-    def __init__(self, store: DataStore):
+    def __init__(self, store: DataStore, status_writer=None):
         self.metrics = store.linkedin_metrics
+        self.status_writer = status_writer
         
     def analyze(self) -> list[Insight]:
         """Generate LinkedIn-specific insights"""
@@ -38,9 +39,14 @@ class LinkedInAnalyticsAgent:
     def _call_llm(self, prompt: str, context: str) -> str:
         """Helper to call LLM via LiteLLM directly"""
         if not API_BASE or not API_KEY:
+            print("    ⚠ LLM API not configured, using fallback")
             return "LLM unavailable."
             
         try:
+            msg = "    🔄 Calling LLM for analysis..."
+            print(msg)
+            if self.status_writer:
+                self.status_writer.write(msg)
             response = litellm.completion(
                 model="hackathon-gemini-2.5-pro",
                 api_base=API_BASE,
@@ -49,9 +55,30 @@ class LinkedInAnalyticsAgent:
                     {"role": "system", "content": "You are a LinkedIn marketing analyst. Provide concise, strategic insights."},
                     {"role": "user", "content": f"{context}\n\n{prompt}"}
                 ],
-                max_tokens=500
+                max_tokens=500,
+                timeout=30  # 30 second timeout
             )
-            return response.choices[0].message.content.strip()
+            
+            # Track token usage
+            try:
+                from .token_tracker import record_llm_call
+                record_llm_call("LinkedInAnalyticsAgent", "insight_generation", response, "hackathon-gemini-2.5-pro")
+            except Exception as e:
+                print(f"    ⚠ Could not track token usage: {e}")
+            
+            msg = "    ✓ LLM response received"
+            print(msg)
+            if self.status_writer:
+                self.status_writer.write(msg)
+            # Handle None response
+            if not response or not response.choices or len(response.choices) == 0:
+                return "LLM returned empty response."
+            
+            content = response.choices[0].message.content
+            if content is None:
+                return "LLM returned None content."
+            
+            return content.strip() if content else "LLM returned empty content."
         except Exception as e:
             return f"Analysis error: {str(e)[:100]}"
     
@@ -87,6 +114,10 @@ Task:
 Explain the implications of this engagement trend and provide 1-2 actionable recommendations based ONLY on these facts. Be concise and specific."""
         
         summary = self._call_llm("Analyze this data.", context)
+        
+        # Provide fallback if LLM failed
+        if not summary or summary.startswith("Analysis error") or summary.startswith("LLM"):
+            summary = f"Engagement efficiency is {recent_efficiency:.2%} (reactions per impression). {'Improving' if change_pct > 0 else 'Declining' if change_pct < 0 else 'Stable'} trend ({change_pct:+.1f}% change). Focus on content quality and optimal posting times."
         
         return Insight(
             title="LinkedIn: Engagement Efficiency",
@@ -134,6 +165,11 @@ Task:
 Explain what this posting cadence pattern means for engagement performance and recommend optimal posting frequency based ONLY on these facts. Be specific."""
         
         summary = self._call_llm("Analyze this data.", context)
+        
+        # Provide fallback if LLM failed
+        if not summary or summary.startswith("Analysis error") or summary.startswith("LLM"):
+            consistency_level = 'Low (High variance)' if variance_pct > 30 else 'Moderate' if variance_pct > 15 else 'High (Consistent)'
+            summary = f"Posting cadence shows {consistency_level.lower()} consistency ({variance_pct:.1f}% variance). Average weekly impressions: {avg_impressions:,.0f}. Consistent posting frequency typically improves engagement."
         
         return Insight(
             title="LinkedIn: Posting Cadence Analysis",

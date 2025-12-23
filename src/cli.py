@@ -4,11 +4,7 @@ from datetime import datetime
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.agents.ingestion import IngestionAgent
-from src.agents.linkedin_agent import LinkedInAnalyticsAgent
-from src.agents.instagram_agent import InstagramAnalyticsAgent
-from src.agents.website_agent import WebsiteAnalyticsAgent
-from src.agents.strategy_agent import StrategyAgent
+from src.agents.orchestrator_agent import OrchestratorAgent
 from src.agents.models import Insight
 
 def print_section_header(title):
@@ -127,37 +123,53 @@ def main():
     print("║    Multi-Platform Analytics for C-Suite Decision Making            ║")
     print("╚════════════════════════════════════════════════════════════════════╝\n")
     
-    # 1. Ingest Data
-    print("Ingesting data from all sources...")
-    ingestion = IngestionAgent(base_dir)
-    store = ingestion.load_data()
+    # Use OrchestratorAgent for parallel execution and better error handling
+    print("🚀 Starting agent orchestration...")
+    print("   (Platform agents will run in parallel for faster execution)\n")
     
-    # 2. Run Platform Agents
-    print("Running platform-specific agents...")
+    orchestrator = OrchestratorAgent(base_dir)
+    result = orchestrator.execute_all()
     
-    linkedin_agent = LinkedInAnalyticsAgent(store)
-    linkedin_insights = linkedin_agent.analyze()
-    print(f"  ✓ LinkedIn Analysis: {len(linkedin_insights)} insights")
+    # Extract results
+    store = result['store']
+    linkedin_insights = result.get('linkedin', [])
+    instagram_insights = result.get('instagram', [])
+    website_insights = result.get('website', [])
+    executive_insights = result.get('executive', [])
     
-    instagram_agent = InstagramAnalyticsAgent(store)
-    instagram_insights = instagram_agent.analyze()
+    # Print execution summary
+    exec_summary = result.get('execution_summary', {})
+    if exec_summary:
+        print("\n📊 Execution Summary:")
+        if 'ingestion' in exec_summary:
+            ing = exec_summary['ingestion']
+            status_icon = "✓" if ing['status'] == 'success' else "✗"
+            print(f"  {status_icon} Ingestion: {ing['status']} ({ing.get('execution_time', 0):.2f}s)")
+        
+        if 'platform_agents' in exec_summary:
+            print("  Platform Agents (executed in parallel):")
+            for platform, status_info in exec_summary['platform_agents'].items():
+                status_icon = "✓" if status_info['status'] == 'success' else "✗"
+                print(f"    {status_icon} {platform.capitalize()}: {status_info['status']} ({status_info.get('execution_time', 0):.2f}s)")
+                if status_info.get('error'):
+                    print(f"      Error: {status_info['error']}")
+        
+        if 'strategy' in exec_summary:
+            strat = exec_summary['strategy']
+            status_icon = "✓" if strat['status'] == 'success' else "✗"
+            print(f"  {status_icon} Strategy: {strat['status']} ({strat.get('execution_time', 0):.2f}s)")
+    
+    print(f"\n  ✓ LinkedIn Analysis: {len(linkedin_insights)} insights")
     print(f"  ✓ Instagram Analysis: {len(instagram_insights)} insights")
-    
-    website_agent = WebsiteAnalyticsAgent(store)
-    website_insights = website_agent.analyze()
     print(f"  ✓ Website Analysis: {len(website_insights)} insights")
+    print(f"  ✓ Executive Summary: {len(executive_insights)} strategic insights\n")
     
-    # 3. Run Strategy Meta-Agent
-    print("\n🧠 Synthesizing executive insights...")
+    # Build platform_insights dict for dashboard
     platform_insights = {
         'LinkedIn': linkedin_insights,
         'Instagram': instagram_insights,
         'Website': website_insights
     }
-    
-    strategy_agent = StrategyAgent(store, platform_insights)
-    executive_insights = strategy_agent.generate_executive_summary()
-    print(f"  ✓ Executive Summary: {len(executive_insights)} strategic insights\n")
     
     # 4. Display Dashboard
     print_dashboard(executive_insights, platform_insights)

@@ -15,9 +15,10 @@ API_KEY = os.getenv("LITELLM_PROXY_GEMINI_API_KEY")
 class StrategyAgent:
     """Meta-agent that synthesizes cross-platform insights for C-suite"""
     
-    def __init__(self, store: DataStore, platform_insights: dict):
+    def __init__(self, store: DataStore, platform_insights: dict, status_writer=None):
         self.store = store
         self.platform_insights = platform_insights  # {platform: [insights]}
+        self.status_writer = status_writer
         
     def generate_executive_summary(self) -> list[Insight]:
         """Answer the 4 core C-suite questions"""
@@ -49,21 +50,37 @@ class StrategyAgent:
         """Helper to call LLM via LiteLLM directly"""
         if not API_BASE or not API_KEY:
             return "LLM unavailable."
-        
+            
         try:
             response = litellm.completion(
                 model="hackathon-gemini-2.5-pro",
                 api_base=API_BASE,
                 api_key=API_KEY,
                 messages=[
-                    {"role": "system", "content": "You are a C-suite strategy advisor. Provide executive-level insights with clear recommendations."},
+                    {"role": "system", "content": "You are a strategic marketing analyst. Provide executive-level insights."},
                     {"role": "user", "content": f"{context}\n\n{prompt}"}
                 ],
-                max_tokens=800
+                max_tokens=500
             )
-            return response.choices[0].message.content.strip()
+            
+            # Track token usage
+            try:
+                from .token_tracker import record_llm_call
+                record_llm_call("StrategyAgent", "strategy_generation", response, "hackathon-gemini-2.5-pro")
+            except Exception as e:
+                print(f"    ⚠ Could not track token usage: {e}")
+            
+            # Handle None response
+            if not response or not response.choices or len(response.choices) == 0:
+                return "LLM returned empty response."
+            
+            content = response.choices[0].message.content
+            if content is None:
+                return "LLM returned None content."
+            
+            return content.strip() if content else "LLM returned empty content."
         except Exception as e:
-            return f"Analysis unavailable: {str(e)[:100]}"
+            return f"Analysis error: {str(e)[:100]}"
     
     def _analyze_growth_trend(self) -> Insight:
         """Analyze comprehensive growth across all platforms"""

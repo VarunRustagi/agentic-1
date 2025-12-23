@@ -6,22 +6,59 @@ Agent logic takes precedence - this file adapts agent outputs to UI
 
 import sys
 import os
+import threading
 from typing import List
+import hashlib
+import json
 sys.path.insert(0, os.path.dirname(__file__))
 
-from src.agents.ingestion import IngestionAgent
-from src.agents.linkedin_agent import LinkedInAnalyticsAgent
-from src.agents.instagram_agent import InstagramAnalyticsAgent
-from src.agents.website_agent import WebsiteAnalyticsAgent
-from src.agents.strategy_agent import StrategyAgent
+from src.agents.orchestrator_agent import OrchestratorAgent
 from src.agents.linkedin_report_agent import LinkedInReportAgent
 from src.agents.instagram_report_agent import InstagramReportAgent
 from src.agents.website_report_agent import WebsiteReportAgent
 import numpy as np
 import pandas as pd
-import os
 from dotenv import load_dotenv
 import litellm
+
+# Import streamlit for caching (only when needed)
+try:
+    import streamlit as st
+    STREAMLIT_AVAILABLE = True
+except ImportError:
+    STREAMLIT_AVAILABLE = False
+    # Create a dummy cache decorator for non-streamlit contexts
+    def cache_data(func):
+        return func
+    st = type('obj', (object,), {'cache_data': lambda f: f})()
+
+def _get_data_hash(agent_data):
+    """
+    Generate a hash of the data to use as cache key.
+    This ensures cache invalidates when data changes.
+    """
+    if not agent_data or 'store' not in agent_data:
+        return "no_data"
+    
+    store = agent_data['store']
+    # Create a simple hash based on record counts and latest dates
+    data_signature = {
+        'li_count': len(store.linkedin_metrics),
+        'ig_count': len(store.instagram_metrics),
+        'web_count': len(store.website_metrics),
+    }
+    
+    # Add latest dates for each platform to detect data updates
+    if store.linkedin_metrics:
+        data_signature['li_latest'] = str(max(m.date for m in store.linkedin_metrics))
+    if store.instagram_metrics:
+        data_signature['ig_latest'] = str(max(m.date for m in store.instagram_metrics))
+    if store.website_metrics:
+        data_signature['web_latest'] = str(max(m.date for m in store.website_metrics))
+    
+    # Create hash from signature
+    sig_str = json.dumps(data_signature, sort_keys=True)
+    return hashlib.md5(sig_str.encode()).hexdigest()
 
 # Load environment variables for LLM
 load_dotenv()
@@ -29,79 +66,238 @@ litellm.use_litellm_proxy = True
 API_BASE = os.getenv("LITELLM_PROXY_API_BASE")
 API_KEY = os.getenv("LITELLM_PROXY_GEMINI_API_KEY")
 
-def load_agent_data():
+# Global flag to prevent duplicate ingestion runs
+_INGESTION_LOCK = False
+
+class StreamlitStatusWriter:
+    """Writes status messages to Streamlit - accumulates messages for display"""
+    def __init__(self, status_container):
+        self.status_container = status_container
+        self.messages = []
+        self._is_main_thread = True  # Will be checked on first write
+        # Write initial message
+        self.write("🚀 Starting data ingestion process...")
+    
+    def write(self, message: str):
+        """Add a message to the log and write to status container (if in main thread)"""
+        self.messages.append(message)
+        
+        # Only try to write to Streamlit if we're in the main thread
+        # Worker threads from ThreadPoolExecutor don't have Streamlit context
+        current_thread = threading.current_thread()
+        is_main_thread = (current_thread.name == 'MainThread' or 
+                         isinstance(current_thread, threading._MainThread))
+        
+        if not is_main_thread:
+            # In worker thread - just accumulate, don't try to write to Streamlit
+            # This prevents the "missing ScriptRunContext" warning
+            return
+        
+        # In main thread - try to write to status container
+        try:
+            if hasattr(self.status_container, 'write'):
+                # This is a st.status() context manager - write directly
+                # Note: Messages written here will appear when the context manager exits
+                self.status_container.write(message)
+            # Also try to write using st.write if available (for debugging)
+            # This won't work during blocking calls but helps with debugging
+        except (RuntimeError, AttributeError, Exception) as e:
+            # If write fails (e.g., no Streamlit context), just accumulate
+            # This is expected in some edge cases
+            # Silently fail - messages will be shown in expander after execution
+            pass
+    
+    def display(self):
+        """Display all accumulated messages (for compatibility with st.empty())"""
+        # If using st.empty(), update the container
+        if hasattr(self.status_container, 'container'):
+            with self.status_container.container():
+                st.markdown("**Processing files and running agents...**")
+                st.markdown("---")
+                if self.messages:
+                    message_text = "\n".join(self.messages)
+                    st.text_area(
+                        "Progress Log:",
+                        value=message_text,
+                        height=min(400, max(200, len(self.messages) * 20)),
+                        disabled=True,
+                        label_visibility="visible"
+                    )
+    
+    def clear(self):
+        """Clear all messages"""
+        self.messages = []
+
+def load_agent_data(status_writer=None):
     """
-    Run all agents and return structured data for Streamlit.
-    This is the SINGLE SOURCE OF TRUTH - no logic changes, just data provision.
+    Run all agents using OrchestratorAgent for parallel execution and error handling.
+    This is the SINGLE SOURCE OF TRUTH - orchestration handles execution order and dependencies.
+    
+    Args:
+        status_writer: Optional StreamlitStatusWriter to display real-time status updates
+    
+    Note: This function is NOT thread-safe for concurrent calls. Streamlit's single-threaded
+    execution model should prevent this, but we add a guard just in case.
     """
-    base_dir = os.path.dirname(__file__)
+    global _INGESTION_LOCK
     
-    # 1. Ingest all data
-    ingestion = IngestionAgent(base_dir)
-    store = ingestion.load_data()
+    # Guard against concurrent calls (shouldn't happen in Streamlit, but safety first)
+    if _INGESTION_LOCK:
+        if status_writer:
+            status_writer.write("⚠️ Ingestion already in progress, skipping duplicate call")
+        else:
+            print("⚠️ Ingestion already in progress, skipping duplicate call")
+        return None
     
-    # 2. Run platform-specific agents
-    linkedin_agent = LinkedInAnalyticsAgent(store)
-    instagram_agent = InstagramAnalyticsAgent(store)
-    website_agent = WebsiteAnalyticsAgent(store)
-    
-    linkedin_insights = linkedin_agent.analyze()
-    instagram_insights = instagram_agent.analyze()
-    website_insights = website_agent.analyze()
-    
-    # 3. Run strategy meta-agent
-    platform_insights = {
-        'LinkedIn': linkedin_insights,
-        'Instagram': instagram_insights,
-        'Website': website_insights
-    }
-    
-    strategy_agent = StrategyAgent(store, platform_insights)
-    executive_insights = strategy_agent.generate_executive_summary()
-    
-    return {
-        'store': store,
-        'linkedin': linkedin_insights,
-        'instagram': instagram_insights,
-        'website': website_insights,
-        'executive': executive_insights
-    }
+    try:
+        _INGESTION_LOCK = True
+        base_dir = os.path.dirname(__file__)
+        
+        # Reset token tracker at the start of each run
+        try:
+            from src.agents.token_tracker import get_tracker
+            get_tracker().reset()
+        except Exception as e:
+            print(f"⚠️ Could not reset token tracker: {e}")
+        
+        # Use OrchestratorAgent to manage execution
+        orchestrator = OrchestratorAgent(base_dir, status_writer=status_writer)
+        result = orchestrator.execute_all()
+        
+        # Return in same format as before (backward compatible)
+        return {
+            'store': result.get('store'),
+            'linkedin': result.get('linkedin', []),
+            'instagram': result.get('instagram', []),
+            'website': result.get('website', []),
+            'executive': result.get('executive', []),
+            'execution_summary': result.get('execution_summary', {})  # New: execution metadata
+        }
+    finally:
+        _INGESTION_LOCK = False
 
 def get_kpi_metrics_from_agent(platform_name, agent_data):
     """
     Convert agent data to KPI format for Streamlit.
     ADAPTER FUNCTION - transforms agent output to UI structure.
+    Cached to avoid recalculating on every render.
     """
+    data_hash = _get_data_hash(agent_data)
+    return _get_kpi_metrics_with_hash(platform_name, agent_data, data_hash)
+
+def _get_kpi_metrics_with_hash(platform_name, agent_data, data_hash):
+    """Wrapper that uses hash for cache key"""
+    # Use hash as cache key, but pass full agent_data to computation
+    cache_key = f"kpi_{platform_name}_{data_hash}"
+    
+    if STREAMLIT_AVAILABLE:
+        # Check if we have a cached result
+        if not hasattr(st.session_state, '_kpi_cache'):
+            st.session_state._kpi_cache = {}
+        
+        if cache_key in st.session_state._kpi_cache:
+            return st.session_state._kpi_cache[cache_key]
+        
+        # Compute and cache
+        result = _get_kpi_metrics_uncached(platform_name, agent_data)
+        st.session_state._kpi_cache[cache_key] = result
+        return result
+    else:
+        return _get_kpi_metrics_uncached(platform_name, agent_data)
+
+def _get_sorted_metrics(store, platform_key):
+    """
+    Get sorted metrics for a platform. This is cached separately to avoid re-sorting.
+    """
+    cache_key = f"sorted_metrics_{platform_key}"
+    
+    if STREAMLIT_AVAILABLE:
+        if not hasattr(st.session_state, '_sorted_metrics_cache'):
+            st.session_state._sorted_metrics_cache = {}
+        
+        if cache_key in st.session_state._sorted_metrics_cache:
+            return st.session_state._sorted_metrics_cache[cache_key]
+        
+        # Get platform-specific metrics
+        if platform_key == 'linkedin':
+            metrics = store.linkedin_metrics
+        elif platform_key == 'instagram':
+            metrics = store.instagram_metrics
+        elif platform_key == 'website':
+            metrics = store.website_metrics
+        else:
+            return []
+        
+        # Sort once and cache
+        sorted_metrics = sorted(metrics, key=lambda x: x.date) if metrics else []
+        st.session_state._sorted_metrics_cache[cache_key] = sorted_metrics
+        return sorted_metrics
+    else:
+        # Non-streamlit context - no caching
+        if platform_key == 'linkedin':
+            metrics = store.linkedin_metrics
+        elif platform_key == 'instagram':
+            metrics = store.instagram_metrics
+        elif platform_key == 'website':
+            metrics = store.website_metrics
+        else:
+            return []
+        return sorted(metrics, key=lambda x: x.date) if metrics else []
+
+def _get_kpi_metrics_uncached(platform_name, agent_data):
+    """Uncached version of KPI metrics calculation"""
+    
     platform_key = platform_name.lower()
     store = agent_data['store']
-    print("Store: ", store)
-    # Get platform-specific metrics
-    if platform_key == 'linkedin':
-        metrics = store.linkedin_metrics
-    elif platform_key == 'instagram':
-        metrics = store.instagram_metrics
-    elif platform_key == 'website':
-        metrics = store.website_metrics
-    else:
-        return []
     
-    if not metrics or len(metrics) == 0 or len(metrics) < 30:
+    # Get sorted metrics (cached separately)
+    sorted_metrics = _get_sorted_metrics(store, platform_key)
+    
+    # For Instagram, we may have fewer records (posts), so use a lower threshold
+    min_records = 7 if platform_key == 'instagram' else 30
+    
+    if not sorted_metrics or len(sorted_metrics) == 0 or len(sorted_metrics) < min_records:
         return _fallback_kpis(platform_name)
     
-    # Calculate real metrics from agent data
-    sorted_metrics = sorted(metrics, key=lambda x: x.date)
-    recent_30 = sorted_metrics[-30:]
-    prev_30 = sorted_metrics[-60:-30] if len(sorted_metrics) >= 60 else recent_30
+    # Use available records (up to 30 for recent, or all if less)
+    available_count = len(sorted_metrics)
+    recent_count = min(30, available_count)
+    recent_30 = sorted_metrics[-recent_count:]
+    
+    # Previous period: use same number of records if available, otherwise use recent period
+    if available_count >= recent_count * 2:
+        prev_30 = sorted_metrics[-recent_count*2:-recent_count]
+    elif available_count > recent_count:
+        # Use remaining records as previous period
+        prev_30 = sorted_metrics[:available_count - recent_count]
+    else:
+        prev_30 = recent_30  # Not enough data for comparison
+    
+    # Get date ranges for display (both current and previous periods)
+    if recent_30:
+        recent_start = recent_30[0].date.strftime('%b %d, %Y')
+        recent_end = recent_30[-1].date.strftime('%b %d, %Y')
+        recent_range = f"{recent_start} - {recent_end}"
+    else:
+        recent_range = "N/A"
+    
+    if prev_30 and len(prev_30) > 0 and prev_30 != recent_30:
+        prev_start = prev_30[0].date.strftime('%b %d, %Y')
+        prev_end = prev_30[-1].date.strftime('%b %d, %Y')
+        prev_range = f"{prev_start} - {prev_end}"
+        comparison_text = f"Current: {recent_range} | Previous: {prev_range}"
+    else:
+        comparison_text = f"Period: {recent_range}"
     
     if platform_key in ['linkedin', 'instagram']:
         # Engagement rate calculation
         avg_eng_recent = np.mean([m.engagement_rate for m in recent_30])
-        avg_eng_prev = np.mean([m.engagement_rate for m in prev_30])
+        avg_eng_prev = np.mean([m.engagement_rate for m in prev_30]) if prev_30 != recent_30 else avg_eng_recent
         eng_change = ((avg_eng_recent - avg_eng_prev) / avg_eng_prev * 100) if avg_eng_prev > 0 else 0
         
         # Impressions/reach growth
         avg_reach_recent = np.mean([m.impressions for m in recent_30])
-        avg_reach_prev = np.mean([m.impressions for m in prev_30])
+        avg_reach_prev = np.mean([m.impressions for m in prev_30]) if prev_30 != recent_30 else avg_reach_recent
         reach_change = ((avg_reach_recent - avg_reach_prev) / avg_reach_prev * 100) if avg_reach_prev > 0 else 0
         
         return [
@@ -110,32 +306,32 @@ def get_kpi_metrics_from_agent(platform_name, agent_data):
                 "value": f"{avg_eng_recent:.1%}",
                 "trend": f"{eng_change:+.1f}%",
                 "trend_direction": "up" if eng_change > 0 else "down",
-                "helper": "vs previous 30 days (Last 30 days basis)"
+                "helper": f"{comparison_text}"
             },
             {
                 "label": "Reach Growth",
                 "value": f"{reach_change:+.1f}%",
                 "trend": f"{int(avg_reach_recent - avg_reach_prev):+,}",
                 "trend_direction": "up" if reach_change > 0 else "down",
-                "helper": "impressions (Last 30 days basis)"
+                "helper": f"impressions | {comparison_text}"
             },
             {
                 "label": "Avg Daily Impressions",
                 "value": f"{int(avg_reach_recent):,}",
                 "trend": f"{reach_change:+.1f}%",
                 "trend_direction": "up" if reach_change > 0 else "down",
-                "helper": "last 30 days"
+                "helper": f"{comparison_text}"
             }
         ]
     
     elif platform_key == 'website':
         # Website-specific metrics
         avg_bounce_recent = np.mean([m.bounce_rate for m in recent_30])
-        avg_bounce_prev = np.mean([m.bounce_rate for m in prev_30])
+        avg_bounce_prev = np.mean([m.bounce_rate for m in prev_30]) if prev_30 != recent_30 else avg_bounce_recent
         bounce_change = ((avg_bounce_recent - avg_bounce_prev) * 100)
         
         avg_views_recent = np.mean([m.page_views for m in recent_30])
-        avg_views_prev = np.mean([m.page_views for m in prev_30])
+        avg_views_prev = np.mean([m.page_views for m in prev_30]) if prev_30 != recent_30 else avg_views_recent
         views_change = ((avg_views_recent - avg_views_prev) / avg_views_prev * 100) if avg_views_prev > 0 else 0
         
         avg_visitors_recent = np.mean([m.unique_visitors for m in recent_30])
@@ -146,21 +342,21 @@ def get_kpi_metrics_from_agent(platform_name, agent_data):
                 "value": f"{avg_bounce_recent:.1%}",
                 "trend": f"{bounce_change:+.1f}pp",
                 "trend_direction": "down" if bounce_change < 0 else "up",  # Lower is better
-                "helper": "vs previous 30 days (Last 30 days basis)"
+                "helper": f"{comparison_text}"
             },
             {
                 "label": "Page Views Growth",
                 "value": f"{views_change:+.1f}%",
                 "trend": f"{int(avg_views_recent):,}/day",
                 "trend_direction": "up" if views_change > 0 else "down",
-                "helper": "daily average (Last 30 days basis)"
+                "helper": f"{comparison_text}"
             },
             {
                 "label": "Unique Visitors",
                 "value": f"{int(avg_visitors_recent):,}",
-                "trend": f"+{views_change:.1f}%",
+                "trend": f"{views_change:+.1f}%",
                 "trend_direction": "up" if views_change > 0 else "down",
-                "helper": "daily average (Last 30 days basis)"
+                "helper": f"{comparison_text}"
             }
         ]
 
@@ -180,7 +376,30 @@ def get_insights_from_agent(platform_name, agent_data):
     """
     Convert agent Insight objects to dashboard format.
     Pure adapter - no logic changes.
+    Cached to avoid reprocessing on every render.
     """
+    data_hash = _get_data_hash(agent_data)
+    return _get_insights_with_hash(platform_name, agent_data, data_hash)
+
+def _get_insights_with_hash(platform_name, agent_data, data_hash):
+    """Wrapper that uses hash for cache key"""
+    cache_key = f"insights_{platform_name}_{data_hash}"
+    
+    if STREAMLIT_AVAILABLE:
+        if not hasattr(st.session_state, '_insights_cache'):
+            st.session_state._insights_cache = {}
+        
+        if cache_key in st.session_state._insights_cache:
+            return st.session_state._insights_cache[cache_key]
+        
+        result = _get_insights_uncached(platform_name, agent_data)
+        st.session_state._insights_cache[cache_key] = result
+        return result
+    else:
+        return _get_insights_uncached(platform_name, agent_data)
+
+def _get_insights_uncached(platform_name, agent_data):
+    """Uncached version of insights transformation"""
     platform_key = platform_name.lower()
     insights = agent_data.get(platform_key, [])
     
@@ -197,13 +416,20 @@ def get_insights_from_agent(platform_name, agent_data):
     # Convert Insight objects to dashboard format
     result = []
     for insight in insights:
+        # Safety checks for None values
+        title = insight.title if insight.title else "Insight"
+        summary = insight.summary if insight.summary else "No summary available."
+        # Remove error messages from summary if present
+        if summary.startswith("Analysis error") or summary.startswith("LLM"):
+            summary = "Analysis unavailable. Please check LLM configuration."
+        
         result.append({
-            "title": insight.title,
-            "description": insight.summary,
-            "confidence": insight.confidence,
-            "evidence": insight.evidence,
-            "metric_basis": insight.metric_basis,
-            "recommendation": insight.recommendation
+            "title": title,
+            "description": summary,
+            "confidence": insight.confidence if insight.confidence else "Low",
+            "evidence": insight.evidence if insight.evidence else [],
+            "metric_basis": insight.metric_basis if insight.metric_basis else "N/A",
+            "recommendation": insight.recommendation if insight.recommendation else "No recommendation available."
         })
     
     return result
@@ -211,7 +437,30 @@ def get_insights_from_agent(platform_name, agent_data):
 def get_recommendations_from_agent(platform_name, agent_data):
     """
     Extract recommendations from agent insights.
+    Cached to avoid reprocessing on every render.
     """
+    data_hash = _get_data_hash(agent_data)
+    return _get_recommendations_with_hash(platform_name, agent_data, data_hash)
+
+def _get_recommendations_with_hash(platform_name, agent_data, data_hash):
+    """Wrapper that uses hash for cache key"""
+    cache_key = f"recommendations_{platform_name}_{data_hash}"
+    
+    if STREAMLIT_AVAILABLE:
+        if not hasattr(st.session_state, '_recommendations_cache'):
+            st.session_state._recommendations_cache = {}
+        
+        if cache_key in st.session_state._recommendations_cache:
+            return st.session_state._recommendations_cache[cache_key]
+        
+        result = _get_recommendations_uncached(platform_name, agent_data)
+        st.session_state._recommendations_cache[cache_key] = result
+        return result
+    else:
+        return _get_recommendations_uncached(platform_name, agent_data)
+
+def _get_recommendations_uncached(platform_name, agent_data):
+    """Uncached version of recommendations extraction"""
     platform_key = platform_name.lower()
     insights = agent_data.get(platform_key, [])
     
@@ -220,10 +469,14 @@ def get_recommendations_from_agent(platform_name, agent_data):
     
     result = []
     for insight in insights:
+        # Safety checks for None values
+        recommendation = insight.recommendation if insight.recommendation else "No recommendation available."
+        metric_basis = insight.metric_basis if insight.metric_basis else "N/A"
+        
         result.append({
-            "action": insight.recommendation,
-            "description": f"Based on: {insight.metric_basis}",
-            "confidence": insight.confidence
+            "action": recommendation,
+            "description": f"Based on: {metric_basis}",
+            "confidence": insight.confidence if insight.confidence else "Low"
         })
     
     return result
@@ -279,35 +532,54 @@ def generate_website_report(files: List[str] = None, report_type: str = "compreh
 def get_engagement_trend_data_from_agent(platform_name, agent_data):
     """
     Extract real engagement trend data from agent store for charts.
+    Cached to avoid recalculating on every render.
     
     Returns:
         pd.DataFrame with 'Month' and 'Engagement Index' columns, or None if insufficient data
     """
+    data_hash = _get_data_hash(agent_data)
+    return _get_engagement_trend_with_hash(platform_name, agent_data, data_hash)
+
+def _get_engagement_trend_with_hash(platform_name, agent_data, data_hash):
+    """Wrapper that uses hash for cache key"""
+    cache_key = f"engagement_trend_{platform_name}_{data_hash}"
+    
+    if STREAMLIT_AVAILABLE:
+        if not hasattr(st.session_state, '_engagement_trend_cache'):
+            st.session_state._engagement_trend_cache = {}
+        
+        if cache_key in st.session_state._engagement_trend_cache:
+            return st.session_state._engagement_trend_cache[cache_key]
+        
+        result = _get_engagement_trend_uncached(platform_name, agent_data)
+        st.session_state._engagement_trend_cache[cache_key] = result
+        return result
+    else:
+        return _get_engagement_trend_uncached(platform_name, agent_data)
+
+def _get_engagement_trend_uncached(platform_name, agent_data):
+    """Uncached version of engagement trend calculation"""
     if not agent_data or 'store' not in agent_data:
         return None
     
     platform_key = platform_name.lower()
     store = agent_data['store']
     
-    # Get platform-specific metrics
+    # Get sorted metrics (cached separately)
+    sorted_metrics = _get_sorted_metrics(store, platform_key)
+    
+    if not sorted_metrics or len(sorted_metrics) < 7:
+        return None
+    
+    # Determine metric field
     if platform_key == 'linkedin':
-        metrics = store.linkedin_metrics
         metric_field = 'engagement_rate'
     elif platform_key == 'instagram':
-        metrics = store.instagram_metrics
         metric_field = 'engagement_rate'
     elif platform_key == 'website':
-        metrics = store.website_metrics
-        # For website, use inverse of bounce rate as engagement proxy
-        metric_field = 'bounce_rate'
+        metric_field = 'bounce_rate'  # For website, use inverse of bounce rate as engagement proxy
     else:
         return None
-    
-    if not metrics or len(metrics) < 7:
-        return None
-    
-    # Sort by date
-    sorted_metrics = sorted(metrics, key=lambda x: x.date)
     
     # Group by month
     monthly_data = {}
@@ -370,7 +642,8 @@ def ask_insight_room(question: str, agent_data: dict) -> str:
     
     # LinkedIn data summary
     if store.linkedin_metrics:
-        recent_li = sorted(store.linkedin_metrics, key=lambda x: x.date)[-30:]
+        sorted_li = _get_sorted_metrics(store, 'linkedin')
+        recent_li = sorted_li[-30:] if len(sorted_li) >= 30 else sorted_li
         avg_eng = sum(m.engagement_rate for m in recent_li) / len(recent_li) if recent_li else 0
         context_parts.append(f"LinkedIn Metrics: {len(store.linkedin_metrics)} records. Recent avg engagement: {avg_eng:.2%}")
     
@@ -382,7 +655,8 @@ def ask_insight_room(question: str, agent_data: dict) -> str:
     
     # Instagram data summary
     if store.instagram_metrics:
-        recent_ig = sorted(store.instagram_metrics, key=lambda x: x.date)[-30:]
+        sorted_ig = _get_sorted_metrics(store, 'instagram')
+        recent_ig = sorted_ig[-30:] if len(sorted_ig) >= 30 else sorted_ig
         avg_eng = sum(m.engagement_rate for m in recent_ig) / len(recent_ig) if recent_ig else 0
         context_parts.append(f"Instagram Metrics: {len(store.instagram_metrics)} records. Recent avg engagement: {avg_eng:.2%}")
     
@@ -400,7 +674,8 @@ def ask_insight_room(question: str, agent_data: dict) -> str:
     
     # Website data summary
     if store.website_metrics:
-        recent_web = sorted(store.website_metrics, key=lambda x: x.date)[-30:]
+        sorted_web = _get_sorted_metrics(store, 'website')
+        recent_web = sorted_web[-30:] if len(sorted_web) >= 30 else sorted_web
         avg_bounce = sum(m.bounce_rate for m in recent_web) / len(recent_web) if recent_web else 0
         context_parts.append(f"Website Metrics: {len(store.website_metrics)} records. Recent avg bounce rate: {avg_bounce:.2%}")
     
@@ -452,7 +727,7 @@ Answer:"""
                     "content": prompt
                 }
             ],
-            max_tokens=2000
+            max_tokens=8000  # Increased from 2000 to allow for complete, detailed answers
         )
         
         return response.choices[0].message.content.strip()
@@ -462,19 +737,42 @@ Answer:"""
 def get_supporting_charts_data_from_agent(agent_data):
     """
     Extract real supporting chart data from agent store.
+    Cached to avoid recalculating on every render.
     
     Returns:
         Tuple of (df_followers, df_visitors) DataFrames, or None if insufficient data
     """
+    data_hash = _get_data_hash(agent_data)
+    return _get_supporting_charts_with_hash(agent_data, data_hash)
+
+def _get_supporting_charts_with_hash(agent_data, data_hash):
+    """Wrapper that uses hash for cache key"""
+    cache_key = f"supporting_charts_{data_hash}"
+    
+    if STREAMLIT_AVAILABLE:
+        if not hasattr(st.session_state, '_supporting_charts_cache'):
+            st.session_state._supporting_charts_cache = {}
+        
+        if cache_key in st.session_state._supporting_charts_cache:
+            return st.session_state._supporting_charts_cache[cache_key]
+        
+        result = _get_supporting_charts_uncached(agent_data)
+        st.session_state._supporting_charts_cache[cache_key] = result
+        return result
+    else:
+        return _get_supporting_charts_uncached(agent_data)
+
+def _get_supporting_charts_uncached(agent_data):
+    """Uncached version of supporting charts calculation"""
     if not agent_data or 'store' not in agent_data:
         return None, None
     
     store = agent_data['store']
     
     # Follower Growth - use LinkedIn impressions as proxy (or actual follower data if available)
-    linkedin_metrics = store.linkedin_metrics
-    if linkedin_metrics and len(linkedin_metrics) >= 6:
-        sorted_li = sorted(linkedin_metrics, key=lambda x: x.date)
+    # Use cached sorted metrics
+    sorted_li = _get_sorted_metrics(store, 'linkedin')
+    if sorted_li and len(sorted_li) >= 6:
         # Get last 6 months of data
         monthly_impressions = {}
         for metric in sorted_li[-180:]:  # Last ~6 months
@@ -502,9 +800,9 @@ def get_supporting_charts_data_from_agent(agent_data):
         df_followers = None
     
     # Visitor Activity - use website metrics
-    website_metrics = store.website_metrics
-    if website_metrics and len(website_metrics) >= 7:
-        sorted_web = sorted(website_metrics, key=lambda x: x.date)
+    # Use cached sorted metrics
+    sorted_web = _get_sorted_metrics(store, 'website')
+    if sorted_web and len(sorted_web) >= 7:
         # Group by day of week
         weekday_visits = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}  # Mon-Sun
         

@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import dashboard_utils as utils
 from typing import Dict, Any
+import re
 
 # ===== AGENT INTEGRATION =====
 # Our multi-agent system takes precedence - this loads REAL data
@@ -180,6 +181,84 @@ def inject_custom_css():
         button[data-baseweb="tab"] div {
             color: inherit !important;
         }
+        
+        /* Info messages - make wrapper transparent, style only notification component */
+        .stInfo {
+            background-color: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
+        /* Style only the actual notification component */
+        [data-baseweb="notification"][kind="info"],
+        .stInfo [data-baseweb="notification"][kind="info"] {
+            background-color: #EFF6FF !important;
+            border-left: 4px solid #2563EB !important;
+            border-right: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
+            border-radius: 4px !important;
+            color: #0F172A !important;
+            padding: 1rem !important;
+        }
+        /* Remove all styling from wrapper divs to prevent double boxes */
+        .stInfo > div,
+        .stInfo > div > div,
+        .stInfo [data-baseweb="notification"] > div,
+        .stInfo [data-baseweb="notification"] > div > div,
+        [data-baseweb="notification"][kind="info"] > div,
+        [data-baseweb="notification"][kind="info"] > div > div {
+            border: none !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .stInfo p,
+        .stInfo span,
+        .stInfo * {
+            color: #0F172A !important;
+        }
+        
+        /* Warning messages - make wrapper transparent, style only notification component */
+        .stWarning {
+            background-color: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
+        /* Style only the actual notification component */
+        [data-baseweb="notification"][kind="warning"],
+        .stWarning [data-baseweb="notification"][kind="warning"] {
+            background-color: #FFFBEB !important;
+            border-left: 4px solid #F59E0B !important;
+            border-right: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
+            border-radius: 4px !important;
+            color: #0F172A !important;
+            padding: 1rem !important;
+        }
+        /* Remove all styling from wrapper divs to prevent double boxes */
+        .stWarning > div,
+        .stWarning > div > div,
+        .stWarning [data-baseweb="notification"] > div,
+        .stWarning [data-baseweb="notification"] > div > div,
+        [data-baseweb="notification"][kind="warning"] > div,
+        [data-baseweb="notification"][kind="warning"] > div > div {
+            border: none !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .stWarning p,
+        .stWarning span,
+        .stWarning * {
+            color: #0F172A !important;
+        }
 
         /* Sidebar Title and Text Visibility */
         [data-testid="stSidebar"] h3 {
@@ -288,27 +367,29 @@ def inject_custom_css():
             color: #0F172A !important; /* Black */
         }
         
-        /* Info, Warning, Success, Error messages - Black text */
+        /* Success and Error messages - Black text */
         .stAlert,
-        [data-baseweb="notification"],
-        .stInfo,
-        .stWarning,
+        [data-baseweb="notification"][kind="success"],
+        [data-baseweb="notification"][kind="error"],
         .stSuccess,
         .stError {
             color: #0F172A !important; /* Black */
         }
-        .stInfo > div,
-        .stWarning > div,
         .stSuccess > div,
         .stError > div {
             color: #0F172A !important; /* Black */
         }
         
-        /* Expander text - Black */
+        /* Expander styling - white background with black text */
         [data-baseweb="accordion"],
+        [data-baseweb="accordion"] > div,
+        [data-baseweb="accordion"] > div > div,
         .streamlit-expanderHeader,
         .streamlit-expanderContent {
-            color: #0F172A !important; /* Black */
+            background-color: #FFFFFF !important;
+            color: #0F172A !important; /* Black text */
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 8px !important;
         }
         
         /* Table text - Black */
@@ -367,6 +448,200 @@ def inject_custom_css():
             color: #0F172A !important; /* Black */
         }
         
+        /* Status component styling - ensure visibility with light background */
+        [data-testid="stStatus"],
+        [data-baseweb="notification"],
+        [data-baseweb="notification"] > div,
+        div[data-testid="stStatus"] {
+            background-color: #FFFFFF !important;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 8px !important;
+            padding: 16px !important;
+        }
+        
+        /* Status component container - force white background */
+        div[data-testid="stStatus"],
+        div[data-testid="stStatus"] > div,
+        div[data-testid="stStatus"] > div > div {
+            background-color: #FFFFFF !important;
+        }
+        
+        /* Status component - force white background everywhere - HIGH PRIORITY */
+        div[data-testid="stStatus"],
+        [data-testid="stStatus"],
+        [data-testid="stStatus"] > div,
+        [data-testid="stStatus"] > div > div,
+        [data-testid="stStatus"] > div > div > button,
+        [data-testid="stStatus"] button,
+        [data-testid="stStatus"] > button,
+        [data-testid="stStatus"] [data-baseweb="button"],
+        [data-baseweb="notification"],
+        [data-baseweb="notification"] > div,
+        [data-baseweb="notification"] button,
+        [data-baseweb="notification"] > button,
+        [data-baseweb="notification"] [data-baseweb="button"] {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+        }
+        
+        /* Status component header/button - white background with visible text - SPECIFIC TARGETING */
+        [data-testid="stStatus"] button,
+        [data-testid="stStatus"] > div > button,
+        [data-testid="stStatus"] > div > div > button,
+        [data-testid="stStatus"] [data-baseweb="button"],
+        [data-testid="stStatus"] [role="button"],
+        [data-baseweb="notification"] button,
+        [data-baseweb="notification"] > button,
+        [data-baseweb="notification"] [data-baseweb="button"] {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 8px !important;
+            padding: 12px 16px !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Status component button text - ensure black text */
+        [data-testid="stStatus"] button *,
+        [data-testid="stStatus"] button span,
+        [data-testid="stStatus"] button div,
+        [data-testid="stStatus"] button p,
+        [data-testid="stStatus"] button label {
+            color: #0F172A !important;
+            background-color: transparent !important;
+        }
+        
+        /* Status component text content */
+        [data-testid="stStatus"] span,
+        [data-testid="stStatus"] div,
+        [data-testid="stStatus"] p,
+        [data-testid="stStatus"] label,
+        [data-baseweb="notification"] span,
+        [data-baseweb="notification"] div,
+        [data-baseweb="notification"] p,
+        [data-baseweb="notification"] label {
+            color: #0F172A !important;
+            background-color: transparent !important;
+        }
+        
+        /* Status component header text specifically */
+        [data-testid="stStatus"] button span,
+        [data-testid="stStatus"] button div,
+        [data-testid="stStatus"] button label,
+        [data-testid="stStatus"] button *,
+        [data-baseweb="notification"] button span,
+        [data-baseweb="notification"] button div,
+        [data-baseweb="notification"] button label,
+        [data-baseweb="notification"] button * {
+            color: #0F172A !important;
+            background-color: transparent !important;
+        }
+        
+        /* Status component text and labels - ensure black text on white background */
+        [data-testid="stStatus"] label,
+        [data-testid="stStatus"] div,
+        [data-testid="stStatus"] p,
+        [data-testid="stStatus"] span,
+        [data-testid="stStatus"] *:not(button),
+        [data-baseweb="notification"] label,
+        [data-baseweb="notification"] div,
+        [data-baseweb="notification"] p,
+        [data-baseweb="notification"] span,
+        [data-baseweb="notification"] *:not(button) {
+            color: #0F172A !important;
+            background-color: transparent !important;
+        }
+        
+        /* Status component spinner/icon - blue when running */
+        [data-testid="stStatus"] svg,
+        [data-baseweb="notification"] svg {
+            color: #2563EB !important;
+        }
+        
+        /* Status component header button hover state */
+        [data-testid="stStatus"] button:hover,
+        [data-baseweb="notification"] button:hover {
+            background-color: #F8FAFC !important;
+            color: #0F172A !important;
+        }
+        
+        /* Status component when running - blue accent */
+        [data-testid="stStatus"][aria-label*="Progress"],
+        [data-testid="stStatus"][aria-label*="Progress"] * {
+            color: #0F172A !important;
+        }
+        
+        /* Additional targeting for status component accordion/expandable header */
+        [data-testid="stStatus"] [role="button"],
+        [data-testid="stStatus"] [data-baseweb="button"][role="button"],
+        [data-baseweb="notification"] [role="button"] {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+        }
+        
+        /* Status component summary/header element */
+        [data-testid="stStatus"] summary,
+        [data-testid="stStatus"] summary *,
+        [data-baseweb="notification"] summary,
+        [data-baseweb="notification"] summary * {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Status component - UNIVERSAL TARGETING for header - force white background and black text */
+        [data-testid="stStatus"] *,
+        [data-testid="stStatus"] > *,
+        [data-testid="stStatus"] > * > *,
+        [data-testid="stStatus"] > * > * > * {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+        }
+        
+        /* Status component header button specifically */
+        [data-testid="stStatus"] > div:first-child,
+        [data-testid="stStatus"] > div:first-child > button,
+        [data-testid="stStatus"] > div:first-child > div,
+        [data-testid="stStatus"] > div:first-child > div > button,
+        [data-testid="stStatus"] > div:first-child > div > span,
+        [data-testid="stStatus"] > div:first-child > div > div,
+        [data-testid="stStatus"] > div:first-child > div > div > span,
+        [data-testid="stStatus"] label,
+        [data-testid="stStatus"] > label {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+            font-weight: 600 !important;
+        }
+        
+        /* Status component content area - ensure logs are visible */
+        [data-testid="stStatus"] > div:last-child,
+        [data-testid="stStatus"] > div:last-child > div,
+        [data-testid="stStatus"] > div:last-child *,
+        [data-testid="stStatus"] [class*="status"],
+        [data-testid="stStatus"] [class*="Status"],
+        [data-testid="stStatus"] pre,
+        [data-testid="stStatus"] code,
+        [data-testid="stStatus"] p {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+        }
+        
+        /* Status component when complete - green accent */
+        [data-testid="stStatus"][aria-label*="complete"],
+        [data-testid="stStatus"][aria-label*="complete"] *,
+        [data-testid="stStatus"][aria-label*="completed"],
+        [data-testid="stStatus"][aria-label*="completed"] * {
+            color: #0F172A !important;
+        }
+        
+        /* Status component when error - red accent */
+        [data-testid="stStatus"][aria-label*="error"],
+        [data-testid="stStatus"][aria-label*="error"] *,
+        [data-testid="stStatus"][aria-label*="failed"],
+        [data-testid="stStatus"][aria-label*="failed"] * {
+            color: #0F172A !important;
+        }
+        
         /* Chat messages - Black text */
         .stChatMessage {
             color: #0F172A !important; /* Black */
@@ -383,14 +658,47 @@ def inject_custom_css():
         [data-testid="stChatInput"] * {
             color: #0F172A !important; /* Black */
         }
-        /* Expander header and content - Black */
+        /* Expander header and content - white background with black text */
         [data-baseweb="accordion"] button,
         [data-baseweb="accordion"] summary,
+        [data-baseweb="accordion"] > div > button,
+        [data-baseweb="accordion"] > div > div > button,
         .streamlit-expanderHeader,
         .streamlit-expanderHeader *,
         .streamlit-expanderContent,
         .streamlit-expanderContent * {
-            color: #0F172A !important; /* Black */
+            background-color: #FFFFFF !important;
+            color: #0F172A !important; /* Black text */
+        }
+        
+        /* Expander header button - ensure white background */
+        [data-baseweb="accordion"] button,
+        [data-baseweb="accordion"] > div > button,
+        [data-baseweb="accordion"] > div > div > button,
+        .streamlit-expanderHeader button,
+        .streamlit-expanderHeader [role="button"] {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 8px !important;
+            padding: 12px 16px !important;
+        }
+        
+        /* Expander content area - white background */
+        [data-baseweb="accordion"] > div:last-child,
+        [data-baseweb="accordion"] > div > div:last-child,
+        .streamlit-expanderContent,
+        .streamlit-expanderContent > div {
+            background-color: #FFFFFF !important;
+            color: #0F172A !important;
+            padding: 16px !important;
+        }
+        
+        /* Expander hover state */
+        [data-baseweb="accordion"] button:hover,
+        .streamlit-expanderHeader button:hover {
+            background-color: #F8FAFC !important;
+            color: #0F172A !important;
         }
         /* Chat message avatars and containers */
         [data-testid="stChatMessage"] * {
@@ -485,6 +793,41 @@ def inject_custom_css():
             color: #0F172A !important;
         }
         
+        /* Download button - ensure visible with proper styling */
+        [data-testid="stDownloadButton"] button,
+        .stDownloadButton button,
+        button[data-testid="baseButton-secondary"] {
+            background-color: #2563EB !important;
+            color: #FFFFFF !important;
+            border: 1px solid #2563EB !important;
+        }
+        
+        /* Download button hover */
+        [data-testid="stDownloadButton"] button:hover,
+        .stDownloadButton button:hover {
+            background-color: #1D4ED8 !important;
+            color: #FFFFFF !important;
+        }
+        
+        /* Secondary buttons (like Clear Chat) - ensure visible */
+        button[kind="secondary"],
+        [data-baseweb="button"][kind="secondary"],
+        .stButton > button[kind="secondary"],
+        div[data-testid="stButton"] > button[kind="secondary"],
+        [data-testid="stButton"] button[kind="secondary"] {
+            background-color: #F1F5F9 !important;
+            color: #0F172A !important;
+            border: 1px solid #E2E8F0 !important;
+            font-weight: 500 !important;
+        }
+        
+        button[kind="secondary"]:hover,
+        [data-baseweb="button"][kind="secondary"]:hover,
+        .stButton > button[kind="secondary"]:hover {
+            background-color: #E2E8F0 !important;
+            color: #0F172A !important;
+        }
+        
         /* Chat input - white background */
         [data-testid="stChatInput"] input,
         [data-testid="stChatInput"] textarea {
@@ -515,10 +858,10 @@ def inject_custom_css():
 inject_custom_css()
 
 # ===== LOAD AGENT DATA (On-demand) =====
-def init_agents():
+def init_agents(status_writer=None):
     """Initialize all agents and load real data"""
     try:
-        return agent_integration.load_agent_data()
+        return agent_integration.load_agent_data(status_writer=status_writer)
     except Exception as e:
         st.error(f"Agent initialization failed: {e}")
         return None
@@ -528,6 +871,10 @@ if 'agent_data' not in st.session_state:
     st.session_state.agent_data = None
 if 'ingestion_in_progress' not in st.session_state:
     st.session_state.ingestion_in_progress = False
+if 'ingestion_started' not in st.session_state:
+    st.session_state.ingestion_started = False
+if 'ingestion_completed' not in st.session_state:
+    st.session_state.ingestion_completed = False
 
 # Get agent data from session state
 agent_data = st.session_state.agent_data
@@ -566,11 +913,15 @@ with st.sidebar:
         st.warning("No data loaded")
         st.markdown("---")
         if st.button("Load Data", type="primary", use_container_width=True):
+            # Reset ingestion flags when user explicitly clicks Load Data
             st.session_state.ingestion_in_progress = True
+            st.session_state.ingestion_started = False
+            st.session_state.ingestion_completed = False
+            st.session_state.agent_data = None  # Clear old data
             st.rerun()
         
     st.markdown("---")
-    st.markdown("**Version 1.2.1 (Enterprise)**")
+    # st.markdown("**Version 1.2.1 (Enterprise)**")
 
 # --- Main Header ---
 col_head_main, col_head_user = st.columns([3, 1])
@@ -586,52 +937,132 @@ with col_head_user:
 st.markdown("---")
 
 # Handle ingestion if button was clicked
+# Add a guard to prevent duplicate ingestion runs
 if st.session_state.ingestion_in_progress and st.session_state.agent_data is None:
-    st.info("Data Ingestion in Progress...")
-    
-    # File processing status
-    status_placeholder = st.empty()
-    
-    try:
-        with status_placeholder.container():
-            st.markdown("**Processing files:**")
+    # Check if ingestion is already running (prevent duplicate calls)
+    # Only start ingestion if it hasn't been started yet in this session
+    if not st.session_state.get('ingestion_started', False):
+        st.session_state.ingestion_started = True
+        
+        try:
+            # Initialize status_writer outside the with block so it's accessible later
+            status_writer = None
             
-            # Show expected file processing steps
-            file_status = st.empty()
-            file_status.markdown("""
-            - Loading LinkedIn data files...
-            - Loading Instagram data files...
-            - Loading Website data files...
-            - Running analytics agents...
-            - Generating insights...
-            """)
-        
-        # Load data (this does all the work)
-        agent_data = init_agents()
-        
-        # Update status
-        with status_placeholder.container():
+            # Use st.status() for better progress visibility
+            with st.status("📊 Data Ingestion in Progress...", expanded=True) as status:
+                # Create status writer that will accumulate messages
+                status_writer = agent_integration.StreamlitStatusWriter(status)
+                
+                # Load data (this does all the work via OrchestratorAgent)
+                # Messages will be written to status container as they come in
+                agent_data = init_agents(status_writer=status_writer)
+                
+                # Update status to show completion
+                if agent_data and agent_data.get('store'):
+                    status.update(label="✅ Data ingestion completed!", state="complete")
+                else:
+                    status.update(label="❌ Data ingestion failed", state="error")
+            
+            # Show detailed logs below the status - always show during and after execution
+            # Logs should appear both in the status component (when it exits) and in the expander
+            if status_writer and hasattr(status_writer, 'messages') and len(status_writer.messages) > 0:
+                with st.expander("📋 Detailed Progress Log", expanded=True):
+                    message_text = "\n".join(status_writer.messages)
+                    st.text_area(
+                        "Execution Log:",
+                        value=message_text,
+                        height=min(400, max(200, len(status_writer.messages) * 20)),
+                        disabled=True,
+                        label_visibility="collapsed"
+                    )
+            elif status_writer:
+                # If status_writer exists but no messages, show a message
+                st.info("No progress logs available. Check console for details.")
+            
+            # Show execution summary
             if agent_data and agent_data.get('store'):
                 store = agent_data['store']
                 st.success("**Files processed successfully:**")
-                st.markdown(f"""
+                
+                # Show record counts
+                record_info = f"""
                 - LinkedIn: {len(store.linkedin_metrics)} records loaded
                 - Instagram: {len(store.instagram_metrics)} records loaded
                 - Website: {len(store.website_metrics)} records loaded
-                """)
+                """
+                
+                # Show execution summary if available
+                exec_summary = agent_data.get('execution_summary', {})
+                if exec_summary and 'platform_agents' in exec_summary:
+                    platform_agents = exec_summary['platform_agents']
+                    record_info += "\n**Agent Execution Status:**\n"
+                    for platform, status_info in platform_agents.items():
+                        status_icon = "✓" if status_info['status'] == 'success' else "✗"
+                        record_info += f"- {status_icon} {platform.capitalize()}: {status_info['status']}\n"
+                
+                st.markdown(record_info)
+                
+                # Show token usage and cost in a dedicated expander
+                exec_summary = agent_data.get('execution_summary', {})
+                if exec_summary and 'token_usage' in exec_summary:
+                    token_usage = exec_summary['token_usage']
+                    if token_usage and token_usage.get('total_calls', 0) > 0:
+                        with st.expander("💰 Token Usage & Cost Summary", expanded=True):
+                            col1, col2, col3, col4 = st.columns(4)
+                            
+                            with col1:
+                                st.metric("Total LLM Calls", token_usage.get('total_calls', 0))
+                            
+                            with col2:
+                                st.metric("Total Tokens", f"{token_usage.get('total_tokens', 0):,}")
+                            
+                            with col3:
+                                prompt_tokens = token_usage.get('total_prompt_tokens', 0)
+                                completion_tokens = token_usage.get('total_completion_tokens', 0)
+                                st.metric("Prompt / Completion", f"{prompt_tokens:,} / {completion_tokens:,}")
+                            
+                            with col4:
+                                total_cost = token_usage.get('total_cost', 0.0)
+                                st.metric("Total Cost", f"${total_cost:.4f}")
+                            
+                            # Detailed breakdown by agent
+                            if token_usage.get('by_agent'):
+                                st.markdown("---")
+                                st.markdown("**Breakdown by Agent:**")
+                                
+                                breakdown_data = []
+                                for agent, metrics in token_usage['by_agent'].items():
+                                    if metrics.get('calls', 0) > 0:
+                                        breakdown_data.append({
+                                            "Agent": agent,
+                                            "Calls": metrics.get('calls', 0),
+                                            "Tokens": f"{metrics.get('tokens', 0):,}",
+                                            "Cost": f"${metrics.get('cost', 0.0):.4f}"
+                                        })
+                                
+                                if breakdown_data:
+                                    df_breakdown = pd.DataFrame(breakdown_data)
+                                    st.dataframe(df_breakdown, use_container_width=True, hide_index=True)
+            
+            # Store results
+            if 'agent_data' in locals():
+                st.session_state.agent_data = agent_data
+                st.session_state.ingestion_in_progress = False
+                st.session_state.ingestion_completed = True
+                st.session_state.ingestion_started = False  # Reset for next time
+                
+                st.success("All data loaded! Dashboard is ready.")
+                st.balloons()
+                st.rerun()
         
-        # Store results
-        st.session_state.agent_data = agent_data
-        st.session_state.ingestion_in_progress = False
-        
-        st.success("All data loaded! Dashboard is ready.")
-        st.balloons()
-        st.rerun()
-        
-    except Exception as e:
-        st.session_state.ingestion_in_progress = False
-        st.error(f"Error loading data: {str(e)}")
-        st.exception(e)
+        except Exception as e:
+            st.session_state.ingestion_in_progress = False
+            st.session_state.ingestion_started = False  # Reset on error
+            st.error(f"Error loading data: {str(e)}")
+            st.exception(e)
+    else:
+        # Ingestion already started, show loading message
+        st.info("Data Ingestion in Progress... Please wait.")
 
 # Show data loading prompt if no data
 if agent_data is None and not st.session_state.ingestion_in_progress:
@@ -866,6 +1297,14 @@ def render_dashboard_tab(platform_name):
                 </details>
                 """
             
+            # Clean description - remove any HTML tags and escape special characters
+            description = str(item.get('description', ''))
+            # Remove any HTML tags that might be in the description
+            import re
+            description = re.sub(r'<[^>]+>', '', description)  # Remove all HTML tags
+            # Escape remaining special characters
+            description = description.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+            
             st.markdown(f"""
             <div class="content-card">
                 <div>
@@ -873,7 +1312,7 @@ def render_dashboard_tab(platform_name):
                         <span class="badge {badge_cls}">Confidence: {item.get('confidence', 'Medium')}</span>
                     </div>
                     <div class="card-main-title">{item.get('title', 'Insight')}</div>
-                    <div class="card-body-text">{item.get('description', '')}</div>
+                    <div class="card-body-text">{description}</div>
                     {evidence_html}
                 </div>
             </div>
@@ -981,15 +1420,22 @@ if "Reports" in selected_menu:
             with col2:
                 linkedin_report_type = st.selectbox(
                     "Report type:",
-                    options=['comprehensive', 'trends', 'correlations', 'executive'],
+                    options=['comprehensive', 'trends', 'correlations', 'executive', 'competitor analysis'],
                     index=0,
-                    key="linkedin_report_type"
+                    key="linkedin_report_type",
+                    disabled=False
                 )
-            
             st.markdown("---")
             col_btn1, col_btn2 = st.columns([1, 3])
             with col_btn1:
-                linkedin_generate = st.button("Generate Report", type="primary", use_container_width=True, key="linkedin_generate")
+                # Disable generate button if competitor analysis is selected
+                linkedin_generate = st.button(
+                    "Generate Report", 
+                    type="primary", 
+                    use_container_width=True, 
+                    key="linkedin_generate",
+                    disabled=(linkedin_report_type == 'competitor analysis')
+                )
             with col_btn2:
                 if 'linkedin_report' in st.session_state:
                     st.download_button(
@@ -1001,8 +1447,14 @@ if "Reports" in selected_menu:
                         key="linkedin_download"
                     )
             
+            # Show warning if competitor analysis is selected
+            if linkedin_report_type == 'competitor analysis':
+                st.warning("⚠️ Competitor analysis is coming soon. Please select another report type.")
+            
             if linkedin_generate:
-                if not linkedin_files:
+                if linkedin_report_type == 'competitor analysis':
+                    st.error("Competitor analysis is not yet available. Please select another report type.")
+                elif not linkedin_files:
                     st.warning("Please select at least one file to analyze.")
                 else:
                     with st.spinner(f"Generating {linkedin_report_type} report..."):
@@ -1047,15 +1499,22 @@ if "Reports" in selected_menu:
             with col2:
                 instagram_report_type = st.selectbox(
                     "Report type:",
-                    options=['comprehensive', 'trends', 'correlations', 'executive'],
+                    options=['comprehensive', 'trends', 'correlations', 'executive', 'competitor analysis'],
                     index=0,
-                    key="instagram_report_type"
+                    key="instagram_report_type",
+                    disabled=False
                 )
-            
             st.markdown("---")
             col_btn1, col_btn2 = st.columns([1, 3])
             with col_btn1:
-                instagram_generate = st.button("Generate Report", type="primary", use_container_width=True, key="instagram_generate")
+                # Disable generate button if competitor analysis is selected
+                instagram_generate = st.button(
+                    "Generate Report", 
+                    type="primary", 
+                    use_container_width=True, 
+                    key="instagram_generate",
+                    disabled=(instagram_report_type == 'competitor analysis')
+                )
             with col_btn2:
                 if 'instagram_report' in st.session_state:
                     st.download_button(
@@ -1067,8 +1526,14 @@ if "Reports" in selected_menu:
                         key="instagram_download"
                     )
             
+            # Show warning if competitor analysis is selected
+            if instagram_report_type == 'competitor analysis':
+                st.warning("⚠️ Competitor analysis is coming soon. Please select another report type.")
+            
             if instagram_generate:
-                if not instagram_files:
+                if instagram_report_type == 'competitor analysis':
+                    st.error("Competitor analysis is not yet available. Please select another report type.")
+                elif not instagram_files:
                     st.warning("Please select at least one file to analyze.")
                 else:
                     with st.spinner(f"Generating {instagram_report_type} report..."):
@@ -1113,15 +1578,22 @@ if "Reports" in selected_menu:
             with col2:
                 website_report_type = st.selectbox(
                     "Report type:",
-                    options=['comprehensive', 'trends', 'correlations', 'executive'],
+                    options=['comprehensive', 'trends', 'correlations', 'executive', 'competitor analysis'],
                     index=0,
-                    key="website_report_type"
+                    key="website_report_type",
+                    disabled=False
                 )
-            
             st.markdown("---")
             col_btn1, col_btn2 = st.columns([1, 3])
             with col_btn1:
-                website_generate = st.button("Generate Report", type="primary", use_container_width=True, key="website_generate")
+                # Disable generate button if competitor analysis is selected
+                website_generate = st.button(
+                    "Generate Report", 
+                    type="primary", 
+                    use_container_width=True, 
+                    key="website_generate",
+                    disabled=(website_report_type == 'competitor analysis')
+                )
             with col_btn2:
                 if 'website_report' in st.session_state:
                     st.download_button(
@@ -1133,8 +1605,14 @@ if "Reports" in selected_menu:
                         key="website_download"
                     )
             
+            # Show warning if competitor analysis is selected
+            if website_report_type == 'competitor analysis':
+                st.warning("⚠️ Competitor analysis is coming soon. Please select another report type.")
+            
             if website_generate:
-                if not website_files:
+                if website_report_type == 'competitor analysis':
+                    st.error("Competitor analysis is not yet available. Please select another report type.")
+                elif not website_files:
                     st.warning("Please select at least one file to analyze.")
                 else:
                     with st.spinner(f"Generating {website_report_type} report..."):
@@ -1154,19 +1632,6 @@ if "Reports" in selected_menu:
             elif 'website_report' in st.session_state:
                 _display_cached_report(st.session_state['website_report'], 'website')
         
-        # Executive Summary Section (shown in all tabs)
-        st.markdown("---")
-        st.markdown("### Executive Summary (Cross-Platform)")
-        
-        if agent_data and 'executive' in agent_data:
-            exec_insights = agent_data['executive']
-            for insight in exec_insights:
-                with st.expander(f"{insight.title}", expanded=False):
-                    st.markdown(insight.summary)
-                    st.caption(f"**Metric Basis:** {insight.metric_basis} | **Confidence:** {insight.confidence}")
-                    st.markdown(f"**Recommendation:** {insight.recommendation}")
-        else:
-            st.info("Executive insights will appear here after agents complete analysis.")
 
 else:
     # --- Main Dashboard View (Dashboard & Marketing) ---
@@ -1192,60 +1657,67 @@ else:
     st.markdown("---")
 
 # --- Ask The Insight Room Chat Interface ---
-with st.expander("Ask The Insight Room", expanded=False):
-    st.markdown("**AI Analyst** - Ask questions about your marketing data")
-    
-    # Initialize chat history in session state
-    if 'chat_history' not in st.session_state:
-        st.session_state.chat_history = []
-        # Add welcome message
-        st.session_state.chat_history.append({
-            "role": "assistant",
-            "content": "Hello! I'm your AI analyst. I can help you understand your marketing data across LinkedIn, Instagram, and Website. Ask me anything about trends, performance, or recommendations!"
-        })
-    
-    # Display chat history
-    for message in st.session_state.chat_history:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-    
-    # User input
-    user_question = st.chat_input("Ask a question about your data...", key="insight_room_input")
-    
-    if user_question:
-        # Add user message to history
-        st.session_state.chat_history.append({
-            "role": "user",
-            "content": user_question
-        })
+# Only enable if data is loaded
+if agent_data and agent_data.get('store'):
+    with st.expander("Ask The Insight Room", expanded=False):
+        st.markdown("**AI Analyst** - Ask questions about your marketing data")
         
-        # Show user message
-        with st.chat_message("user"):
-            st.markdown(user_question)
-        
-        # Generate AI response
-        with st.chat_message("assistant"):
-            with st.spinner("Analyzing data..."):
-                try:
-                    response = agent_integration.ask_insight_room(user_question, agent_data)
-                    st.markdown(response)
-                    # Add assistant response to history
-                    st.session_state.chat_history.append({
-                        "role": "assistant",
-                        "content": response
-                    })
-                except Exception as e:
-                    error_msg = f"Error: {str(e)}"
-                    st.error(error_msg)
-                    st.session_state.chat_history.append({
-                        "role": "assistant",
-                        "content": error_msg
-                    })
-    
-    # Clear chat button
-    if st.session_state.chat_history:
-        if st.button("Clear Chat", key="clear_chat"):
+        # Initialize chat history in session state
+        if 'chat_history' not in st.session_state:
             st.session_state.chat_history = []
-            st.rerun()
+            # Add welcome message
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": "Hello! I'm your AI analyst. I can help you understand your marketing data across LinkedIn, Instagram, and Website. Ask me anything about trends, performance, or recommendations!"
+            })
+        
+        # Display chat history
+        for message in st.session_state.chat_history:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+        
+        # User input
+        user_question = st.chat_input("Ask a question about your data...", key="insight_room_input")
+        
+        if user_question:
+            # Add user message to history
+            st.session_state.chat_history.append({
+                "role": "user",
+                "content": user_question
+            })
+            
+            # Show user message
+            with st.chat_message("user"):
+                st.markdown(user_question)
+            
+            # Generate AI response
+            with st.chat_message("assistant"):
+                with st.spinner("Analyzing data..."):
+                    try:
+                        response = agent_integration.ask_insight_room(user_question, agent_data)
+                        st.markdown(response)
+                        # Add assistant response to history
+                        st.session_state.chat_history.append({
+                            "role": "assistant",
+                            "content": response
+                        })
+                    except Exception as e:
+                        error_msg = f"Error: {str(e)}"
+                        st.error(error_msg)
+                        st.session_state.chat_history.append({
+                            "role": "assistant",
+                            "content": error_msg
+                        })
+        
+        # Clear chat button
+        if st.session_state.chat_history:
+            if st.button("Clear Chat", key="clear_chat", type="secondary"):
+                st.session_state.chat_history = []
+                st.rerun()
+else:
+    with st.expander("Ask The Insight Room", expanded=False):
+        st.markdown("**AI Analyst** - Ask questions about your marketing data")
+        st.info("Please load data using the 'Load Data' button in the sidebar to use this feature.")
+        st.chat_input("Ask a question about your data...", key="insight_room_input_disabled", disabled=True)
 
 # Force Reload

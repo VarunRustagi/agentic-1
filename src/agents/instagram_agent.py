@@ -13,8 +13,9 @@ API_KEY = os.getenv("LITELLM_PROXY_GEMINI_API_KEY")
 class InstagramAnalyticsAgent:
     """Specialized agent for Instagram performance analysis"""
     
-    def __init__(self, store: DataStore):
+    def __init__(self, store: DataStore, status_writer=None):
         self.metrics = store.instagram_metrics
+        self.status_writer = status_writer
         
     def analyze(self) -> list[Insight]:
         """Generate Instagram-specific insights"""
@@ -35,9 +36,14 @@ class InstagramAnalyticsAgent:
     def _call_llm(self, prompt: str, context: str) -> str:
         """Helper to call LLM via LiteLLM directly"""
         if not API_BASE or not API_KEY:
+            print("    ⚠ LLM API not configured, using fallback")
             return "LLM unavailable."
             
         try:
+            msg = "    🔄 Calling LLM for analysis..."
+            print(msg)
+            if self.status_writer:
+                self.status_writer.write(msg)
             response = litellm.completion(
                 model="hackathon-gemini-2.5-pro",
                 api_base=API_BASE,
@@ -46,9 +52,30 @@ class InstagramAnalyticsAgent:
                     {"role": "system", "content": "You are an Instagram marketing analyst. Provide concise, actionable insights."},
                     {"role": "user", "content": f"{context}\n\n{prompt}"}
                 ],
-                max_tokens=500
+                max_tokens=500,
+                timeout=30  # 30 second timeout
             )
-            return response.choices[0].message.content.strip()
+            
+            # Track token usage
+            try:
+                from .token_tracker import record_llm_call
+                record_llm_call("InstagramAnalyticsAgent", "insight_generation", response, "hackathon-gemini-2.5-pro")
+            except Exception as e:
+                print(f"    ⚠ Could not track token usage: {e}")
+            
+            msg = "    ✓ LLM response received"
+            print(msg)
+            if self.status_writer:
+                self.status_writer.write(msg)
+            # Handle None response
+            if not response or not response.choices or len(response.choices) == 0:
+                return "LLM returned empty response."
+            
+            content = response.choices[0].message.content
+            if content is None:
+                return "LLM returned None content."
+            
+            return content.strip() if content else "LLM returned empty content."
         except Exception as e:
             return f"Analysis error: {str(e)[:100]}"
     
@@ -79,6 +106,11 @@ Task:
 Explain what this reach vs engagement pattern indicates about audience growth strategy. Base recommendations ONLY on these facts. If sample size is limited, acknowledge uncertainty."""
         
         summary = self._call_llm("Analyze this data.", context)
+        
+        # Provide fallback if LLM failed
+        if not summary or summary.startswith("Analysis error") or summary.startswith("LLM"):
+            mode = "discovery mode" if avg_reach > 1000 and avg_engagement < 0.05 else "retention mode" if avg_reach < 500 and avg_engagement > 0.08 else "balanced"
+            summary = f"Average reach: {avg_reach:.0f} impressions/post, engagement rate: {avg_engagement:.2%}. Pattern indicates {mode}. {'Focus on expanding reach' if mode == 'retention mode' else 'Strengthen engagement' if mode == 'discovery mode' else 'Maintain balance'}."
         
         # Sample-size-based confidence adjustment
         confidence = "Medium" if total_posts < 20 else "High"
@@ -120,6 +152,10 @@ Task:
 Recommend content format strategy based ONLY on this engagement data. If sample size is limited, explicitly state the constraint."""
         
         summary = self._call_llm("Analyze this data.", context)
+        
+        # Provide fallback if LLM failed
+        if not summary or summary.startswith("Analysis error") or summary.startswith("LLM"):
+            summary = f"High-engagement posts ({len(high_engagement)} posts, avg {high_avg:.2%}) significantly outperform low-engagement posts (avg {low_avg:.2%}). {'Focus on replicating high-engagement content formats' if high_engagement else 'Test different content formats to find what resonates'}."
         
         # Sample-size-based confidence
         confidence = "Low" if total_posts < 10 else "Medium" if total_posts < 20 else "High"
