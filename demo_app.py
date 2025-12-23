@@ -1055,6 +1055,27 @@ if st.session_state.ingestion_in_progress and st.session_state.agent_data is Non
                 if exec_summary and 'token_usage' in exec_summary:
                     token_usage = exec_summary['token_usage']
                     if token_usage and token_usage.get('total_calls', 0) > 0:
+                        # Print to console for logging
+                        print("\n" + "="*70)
+                        print("💰 TOKEN USAGE & COST SUMMARY")
+                        print("="*70)
+                        print(f"Total LLM Calls: {token_usage.get('total_calls', 0)}")
+                        print(f"Total Tokens: {token_usage.get('total_tokens', 0):,}")
+                        print(f"Prompt Tokens: {token_usage.get('total_prompt_tokens', 0):,}")
+                        print(f"Completion Tokens: {token_usage.get('total_completion_tokens', 0):,}")
+                        print(f"Total Cost: ${token_usage.get('total_cost', 0.0):.4f}")
+                        
+                        if token_usage.get('by_agent'):
+                            print("\nBreakdown by Agent:")
+                            print("-" * 70)
+                            for agent, metrics in token_usage['by_agent'].items():
+                                if metrics.get('calls', 0) > 0:
+                                    print(f"  {agent}:")
+                                    print(f"    Calls: {metrics.get('calls', 0)}")
+                                    print(f"    Tokens: {metrics.get('tokens', 0):,}")
+                                    print(f"    Cost: ${metrics.get('cost', 0.0):.4f}")
+                        print("="*70 + "\n")
+                        
                         with st.expander("💰 Token Usage & Cost Summary", expanded=True):
                             col1, col2, col3, col4 = st.columns(4)
                             
@@ -1091,6 +1112,12 @@ if st.session_state.ingestion_in_progress and st.session_state.agent_data is Non
                                 if breakdown_data:
                                     df_breakdown = pd.DataFrame(breakdown_data)
                                     st.dataframe(df_breakdown, use_container_width=True, hide_index=True)
+                    else:
+                        # Show message if token usage exists but no calls were made
+                        st.warning("💰 Token tracking is enabled, but no LLM calls were recorded in this run.")
+                else:
+                    # Show message if token usage is not available
+                    st.warning("💰 Token usage data is not available. Token tracking may not have been initialized properly.")
             
             # Store results
             if 'agent_data' in locals():
@@ -1513,6 +1540,23 @@ if "Reports" in selected_menu:
                             elif 'error' in report:
                                 st.error(f"Error: {report['error']}")
                             else:
+                                # Print token usage for report generation
+                                try:
+                                    from src.agents.token_tracker import get_tracker
+                                    tracker = get_tracker()
+                                    # Get calls since last reset (report generation calls)
+                                    report_calls = tracker.get_calls_by_agent("LinkedInReportAgent")
+                                    if report_calls:
+                                        latest_call = report_calls[-1]
+                                        print("\n" + "="*70)
+                                        print(f"💰 LINKEDIN REPORT GENERATION COST")
+                                        print("="*70)
+                                        print(f"Tokens Used: {latest_call.total_tokens:,} (Prompt: {latest_call.prompt_tokens:,}, Completion: {latest_call.completion_tokens:,})")
+                                        print(f"Cost: ${latest_call.cost:.4f}")
+                                        print("="*70 + "\n")
+                                except Exception as e:
+                                    print(f"⚠️ Could not retrieve report generation cost: {e}")
+                                
                                 _display_report(report, 'linkedin', linkedin_report_type)
                         except Exception as e:
                             st.error(f"Error: {str(e)}")
@@ -1592,6 +1636,23 @@ if "Reports" in selected_menu:
                             elif 'error' in report:
                                 st.error(f"Error: {report['error']}")
                             else:
+                                # Print token usage for report generation
+                                try:
+                                    from src.agents.token_tracker import get_tracker
+                                    tracker = get_tracker()
+                                    # Get calls since last reset (report generation calls)
+                                    report_calls = tracker.get_calls_by_agent("InstagramReportAgent")
+                                    if report_calls:
+                                        latest_call = report_calls[-1]
+                                        print("\n" + "="*70)
+                                        print(f"💰 INSTAGRAM REPORT GENERATION COST")
+                                        print("="*70)
+                                        print(f"Tokens Used: {latest_call.total_tokens:,} (Prompt: {latest_call.prompt_tokens:,}, Completion: {latest_call.completion_tokens:,})")
+                                        print(f"Cost: ${latest_call.cost:.4f}")
+                                        print("="*70 + "\n")
+                                except Exception as e:
+                                    print(f"⚠️ Could not retrieve report generation cost: {e}")
+                                
                                 _display_report(report, 'instagram', instagram_report_type)
                         except Exception as e:
                             st.error(f"Error: {str(e)}")
@@ -1671,6 +1732,23 @@ if "Reports" in selected_menu:
                             elif 'error' in report:
                                 st.error(f"Error: {report['error']}")
                             else:
+                                # Print token usage for report generation
+                                try:
+                                    from src.agents.token_tracker import get_tracker
+                                    tracker = get_tracker()
+                                    # Get calls since last reset (report generation calls)
+                                    report_calls = tracker.get_calls_by_agent("WebsiteReportAgent")
+                                    if report_calls:
+                                        latest_call = report_calls[-1]
+                                        print("\n" + "="*70)
+                                        print(f"💰 WEBSITE REPORT GENERATION COST")
+                                        print("="*70)
+                                        print(f"Tokens Used: {latest_call.total_tokens:,} (Prompt: {latest_call.prompt_tokens:,}, Completion: {latest_call.completion_tokens:,})")
+                                        print(f"Cost: ${latest_call.cost:.4f}")
+                                        print("="*70 + "\n")
+                                except Exception as e:
+                                    print(f"⚠️ Could not retrieve report generation cost: {e}")
+                                
                                 _display_report(report, 'website', website_report_type)
                         except Exception as e:
                             st.error(f"Error: {str(e)}")
@@ -1741,6 +1819,25 @@ if agent_data and agent_data.get('store'):
                     try:
                         response = agent_integration.ask_insight_room(user_question, agent_data)
                         st.markdown(response)
+                        
+                        # Print token usage for chatbot
+                        try:
+                            from src.agents.token_tracker import get_tracker
+                            tracker = get_tracker()
+                            # Get the latest chatbot call
+                            chatbot_calls = tracker.get_calls_by_agent("ChatbotAgent")
+                            if chatbot_calls:
+                                latest_call = chatbot_calls[-1]
+                                print("\n" + "="*70)
+                                print(f"💰 CHATBOT RESPONSE COST")
+                                print("="*70)
+                                print(f"Question: {user_question[:60]}...")
+                                print(f"Tokens Used: {latest_call.total_tokens:,} (Prompt: {latest_call.prompt_tokens:,}, Completion: {latest_call.completion_tokens:,})")
+                                print(f"Cost: ${latest_call.cost:.4f}")
+                                print("="*70 + "\n")
+                        except Exception as e:
+                            print(f"⚠️ Could not retrieve chatbot cost: {e}")
+                        
                         # Add assistant response to history
                         st.session_state.chat_history.append({
                             "role": "assistant",

@@ -195,6 +195,13 @@ class WebsiteReportAgent:
                 max_tokens=4000
             )
             
+            # Track token usage
+            try:
+                from .token_tracker import record_llm_call
+                record_llm_call("WebsiteReportAgent", "report_generation", response, "hackathon-gemini-2.5-pro")
+            except Exception as e:
+                print(f"    ⚠ Could not track token usage: {e}")
+            
             return response.choices[0].message.content.strip()
         except Exception as e:
             return f"Analysis error: {str(e)[:200]}"

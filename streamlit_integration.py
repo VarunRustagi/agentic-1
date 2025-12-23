@@ -763,6 +763,13 @@ Answer:"""
             max_tokens=8000  # Increased from 2000 to allow for complete, detailed answers
         )
         
+        # Track token usage
+        try:
+            from src.agents.token_tracker import record_llm_call
+            record_llm_call("ChatbotAgent", "chat_response", response, "hackathon-gemini-2.5-pro")
+        except Exception as e:
+            print(f"    ⚠ Could not track token usage: {e}")
+        
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"Error generating response: {str(e)[:200]}"
